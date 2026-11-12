@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="کالری‌شمار">
+<meta name="theme-color" content="#14523c">
+<title>🌱 کالری‌شمار سبز</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; font-family: 'Vazirmatn', Tahoma, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    min-height: 100vh; padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+    background: linear-gradient(135deg, #0f3d2e 0%, #1a5c45 50%, #2d8a63 100%);
+    background-attachment: fixed; color: #1a2e26;
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: calc(24px + env(safe-area-inset-top));
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, rgba(120,220,170,0.15), transparent 40%),
+                      radial-gradient(circle at 80% 70%, rgba(90,200,150,0.12), transparent 40%);
+    pointer-events: none;
+  }
+  .container {
+    position: relative; width: 100%; max-width: 820px;
+    background: rgba(255,255,255,0.97); border-radius: 24px; padding: 32px 28px;
+    box-shadow: 0 24px 60px rgba(0,40,25,0.35), 0 0 0 1px rgba(255,255,255,0.5) inset;
+    backdrop-filter: blur(10px);
+  }
+  h1 {
+    text-align: center; font-size: 28px; font-weight: 700; color: #14523c;
+    margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+  }
+  h1 .emoji { font-size: 32px; animation: sway 3s ease-in-out infinite; }
+  @keyframes sway { 0%,100%{transform:rotate(-6deg);} 50%{transform:rotate(6deg);} }
+  .subtitle {
+    text-align: center; color: #6b8a7d; font-size: 13px; margin-bottom: 18px;
+    padding-bottom: 14px; border-bottom: 2px dashed #d4e8dd;
+  }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(10,40,28,0.55);
+    backdrop-filter: blur(6px); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; animation: fadeIn 0.3s ease;
+  }
+  .modal-overlay.hidden { display: none; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .profile-modal {
+    width: 100%; max-width: 440px; background: #fff;
+    border-radius: 22px; padding: 26px 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    max-height: 90vh; overflow-y: auto;
+    animation: popIn 0.35s ease;
+  }
+  .profile-modal h2 {
+    font-size: 20px; color: #14523c; margin-bottom: 6px; text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .profile-modal .pm-desc {
+    font-size: 12px; color: #6b8a7d; text-align: center; margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block; font-size: 12px; font-weight: 600; color: #1a5c45;
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group select {
+    width: 100%; padding: 11px 14px; border: 2px solid #d4e8dd; border-radius: 12px;
+    font-size: 16px; font-family: inherit; color: #1a2e26; background: #f8fdfa;
+    outline: none; transition: all 0.2s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: #2d8a63; background: #fff; box-shadow: 0 0 0 4px rgba(45,138,99,0.12);
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .radio-group { display: flex; gap: 10px; }
+  .radio-group label {
+    flex: 1; padding: 11px; border: 2px solid #d4e8dd; border-radius: 12px;
+    text-align: center; font-size: 13px; font-weight: 600; color: #6b8a7d;
+    cursor: pointer; background: #f8fdfa; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .radio-group input { display: none; }
+  .radio-group input:checked + label {
+    border-color: #2d8a63; background: #eaf7f1; color: #14523c;
+  }
+  .btn-submit-profile {
+    width: 100%; padding: 14px; background: linear-gradient(135deg, #1a5c45, #2d8a63);
+    color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+    cursor: pointer; margin-top: 10px; box-shadow: 0 8px 20px rgba(26,92,69,0.3);
+    font-family: inherit; transition: all 0.2s;
+  }
+  .btn-submit-profile:hover { filter: brightness(1.06); }
+  .btn-submit-profile:active { transform: scale(0.98); }
+  .profile-result {
+    margin-top: 16px; padding: 14px; background: #f2fbf6; border-radius: 12px;
+    border: 1px solid #d4e8dd; font-size: 13px; line-height: 1.9; color: #1a5c45;
+    display: none;
+  }
+  .profile-result.show { display: block; }
+  .profile-result strong { color: #14523c; font-size: 15px; }
+  .sync-status {
+    position: fixed; bottom: 10px; left: 10px; z-index: 999;
+    background: rgba(20,82,60,0.9); color: #fff;
+    padding: 5px 10px; border-radius: 8px; font-size: 11px;
+    font-weight: 600; display: none;
+  }
+  .sync-status.show { display: block; }
+  .sync-status.offline { background: rgba(192,57,43,0.9); }
+  .today-bar {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; background: #eaf7f1; border: 1px solid #d4e8dd; border-radius: 12px;
+    padding: 10px 12px; font-size: 13px; color: #1a5c45; font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .today-bar .today-date { color: #14523c; font-size: 14px; }
+  .today-bar .today-weekday { color: #2d8a63; font-size: 12px; font-weight: 500; }
+  .today-bar .today-clock {
+    color: #6b8a7d; font-size: 11px; font-weight: 500;
+    font-feature-settings: "tnum";
+  }
+  .today-bar .today-week {
+    color: #b9770e; font-size: 11px; font-weight: 500;
+    margin-top: 2px;
+  }
+  .user-badge {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: #fff6e5; border: 1px solid #f8d18a; border-radius: 12px;
+    padding: 10px 14px; font-size: 12px; color: #b9770e; font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .user-badge .ub-text { line-height: 1.6; }
+  .user-badge .ub-edit {
+    background: #fff; border: 1px solid #f8d18a; color: #b9770e;
+    border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+  .limit-progress {
+    background: #f8fdfa; border: 1px solid #d4e8dd; border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 16px;
+  }
+  .limit-progress .lp-labels {
+    display: flex; justify-content: space-between; font-size: 11px;
+    color: #6b8a7d; margin-bottom: 6px; font-weight: 600;
+  }
+  .limit-progress .lp-labels .lp-used { color: #1a5c45; }
+  .limit-progress .lp-bar-bg {
+    height: 10px; background: #eef7f2; border-radius: 6px; overflow: hidden;
+  }
+  .limit-progress .lp-bar {
+    height: 100%; width: 0%; border-radius: 6px;
+    background: linear-gradient(90deg, #4fc98a, #2d8a63); transition: width 0.4s ease;
+  }
+  .limit-progress .lp-bar.over { background: linear-gradient(90deg, #e74c3c, #922b21); }
+  .input-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  @media (max-width:560px){ .input-grid{grid-template-columns:1fr 1fr;} .input-grid .full-width{grid-column:1/-1;} }
+  .input-grid input, .input-grid select {
+    width: 100%; padding: 12px 14px; border: 2px solid #d4e8dd; border-radius: 12px;
+    font-size: 16px; font-family: inherit; color: #1a2e26; background: #f8fdfa; outline: none; transition: all 0.2s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .input-grid input::placeholder { color: #9db5aa; }
+  .input-grid input:focus, .input-grid select:focus {
+    border-color: #2d8a63; background: #fff; box-shadow: 0 0 0 4px rgba(45,138,99,0.12);
+  }
+  #caloriesDisplay { background:#eef7f2; font-weight:600; color:#1a5c45; }
+  .nutrient-preview {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin: 12px 0; padding: 12px; background: #f2fbf6; border-radius: 12px;
+    border: 1px solid #d4e8dd; font-size: 12px; text-align: center;
+  }
+  .nutrient-preview .item { display: flex; flex-direction: column; gap: 2px; }
+  .nutrient-preview .val { font-weight: 700; color: #1a5c45; font-size: 14px; }
+  .nutrient-preview .lbl { color: #6b8a7d; font-size: 11px; }
+  .unit-info {
+    font-size: 11px; color: #2d8a63; text-align: center; margin-bottom: 6px;
+    font-weight: 500; min-height: 16px;
+  }
+  .autofill-badge {
+    display: none; font-size: 11px; color: #2d8a63; text-align: center;
+    margin-bottom: 6px; font-weight: 500;
+  }
+  .autofill-badge.show { display: block; }
+  .hint { font-size: 12px; color: #8aa89b; text-align: center; margin-bottom: 16px; }
+  .alert-box {
+    display: none; border-radius: 12px; padding: 12px 16px; font-size: 13px;
+    font-weight: 600; text-align: center; margin: 8px 0; animation: popIn 0.3s ease;
+  }
+  .alert-box.show { display: block; }
+  .alert-over  { background: #fdecec; color: #c0392b; border: 1.5px solid #f5b7b1; }
+  .alert-diet  { background: #fff6e5; color: #b9770e; border: 1.5px solid #f8d18a; }
+  .alert-win   { background: #eafaf0; color: #1e8449; border: 1.5px solid #a9dfbf; }
+  .alert-newday{ background: #e8f1ff; color: #1f5fa8; border: 1.5px solid #a9c7ee; }
+  .alert-newweek{ background: #f0e8ff; color: #6b3fa8; border: 1.5px solid #c9b3ee; }
+  .btn {
+    border: none; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-add {
+    width: 100%; padding: 13px; background: linear-gradient(135deg, #1a5c45, #2d8a63);
+    color: #fff; margin-bottom: 10px; box-shadow: 0 6px 18px rgba(26,92,69,0.3);
+  }
+  .btn-add:hover { box-shadow: 0 8px 22px rgba(26,92,69,0.42); filter: brightness(1.06); }
+  .btn-calc {
+    width: 100%; padding: 15px; background: linear-gradient(135deg, #2d8a63, #4fc98a);
+    color: #fff; font-size: 15px; margin-bottom: 10px; box-shadow: 0 6px 18px rgba(79,201,138,0.35);
+  }
+  .btn-calc:hover { box-shadow: 0 8px 24px rgba(79,201,138,0.5); filter: brightness(1.06); }
+  .btn-endday {
+    width: 100%; padding: 15px; background: linear-gradient(135deg, #b9770e, #e67e22);
+    color: #fff; font-size: 15px; margin-bottom: 22px; box-shadow: 0 6px 18px rgba(230,126,34,0.35);
+  }
+  .btn-endday:hover { box-shadow: 0 8px 24px rgba(230,126,34,0.5); filter: brightness(1.06); }
+  .table-wrap { border-radius: 16px; overflow: hidden; border: 1px solid #e3f0ea; background: #fbfefc; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: linear-gradient(135deg, #eaf7f1, #ddf0e7); }
+  th { padding: 12px 6px; color: #14523c; font-weight: 600; font-size: 12px; text-align: center; }
+  td { padding: 10px 6px; text-align: center; color: #2d4a3e; border-top: 1px solid #eef7f2; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: #f2fbf6; }
+  td:nth-child(1) { font-weight: 500; text-align: right; padding-right: 12px; }
+  td .food-cell { display: inline-flex; align-items: center; gap: 6px; }
+  td .food-emoji { font-size: 18px; line-height: 1; }
+  td .cal-value {
+    display: inline-block; background: #eaf7f1; color: #1a5c45;
+    padding: 3px 8px; border-radius: 20px; font-weight: 600; font-size: 12px;
+  }
+  td .grams { font-size: 10px; color: #8aa89b; display: block; }
+  .btn-del {
+    background: #fdf2f1; color: #c0392b; padding: 4px 10px; font-size: 11px;
+    border-radius: 8px; border: 1px solid #f3c9c4;
+  }
+  .btn-del:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+  .empty { text-align: center; color: #a7c2b6; padding: 34px 20px; font-size: 14px; }
+  .empty .leaf { display: block; font-size: 30px; margin-bottom: 8px; opacity: 0.7; }
+  .live-total {
+    margin-top: 18px; background: linear-gradient(135deg, #14523c, #2d8a63);
+    color: #fff; padding: 20px; border-radius: 18px; text-align: center;
+    box-shadow: 0 10px 30px rgba(20,82,60,0.35); position: relative; overflow: hidden;
+  }
+  .live-total::before {
+    content: '🌱'; position: absolute; font-size: 110px; opacity: 0.08;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .live-total .label { font-size: 13px; opacity: 0.85; margin-bottom: 6px; position: relative; }
+  .live-total .number { font-size: 32px; font-weight: 700; position: relative; letter-spacing: -0.5px; }
+  .live-total .unit-label { font-size: 15px; font-weight: 400; opacity: 0.9; margin-right: 6px; }
+  .live-total .goal-label { font-size: 11px; opacity: 0.85; margin-top: 4px; position: relative; }
+  .live-total .macro-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-top: 14px; position: relative;
+  }
+  .live-total .macro-item { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 8px 4px; }
+  .live-total .macro-item .mv { font-size: 16px; font-weight: 700; }
+  .live-total .macro-item .ml { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .live-total.over { background: linear-gradient(135deg, #922b21, #c0392b); }
+  .history-box {
+    margin-top: 18px; background: #f8fdfa; border: 1px solid #d4e8dd;
+    border-radius: 14px; padding: 14px;
+  }
+  .history-box h3 {
+    font-size: 13px; color: #14523c; margin-bottom: 10px; display: flex;
+    align-items: center; gap: 6px; justify-content: space-between;
+  }
+  .history-box h3 .h3-left { display: flex; align-items: center; gap: 6px; }
+  .history-box h3 .week-badge {
+    font-size: 10px; background: #eaf7f1; color: #1a5c45;
+    padding: 3px 8px; border-radius: 10px; font-weight: 600;
+  }
+  .history-box .hist-item {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; padding: 8px 10px; background: #fff; border-radius: 8px;
+    margin-bottom: 6px; border: 1px solid #eef7f2;
+  }
+  .history-box .hist-item .h-date { color: #6b8a7d; }
+  .history-box .hist-item .h-cal { font-weight: 700; color: #1a5c45; }
+  .history-box .hist-item .h-cal.over { color: #c0392b; }
+  .history-box .hist-item .h-cal.win { color: #1e8449; }
+  .history-box .hist-item .h-btn {
+    background: #fdf2f1; color: #c0392b; border: 1px solid #f3c9c4;
+    border-radius: 6px; padding: 2px 8px; font-size: 10px; cursor: pointer;
+  }
+  .history-box .hist-empty { font-size: 12px; color: #a7c2b6; text-align: center; padding: 8px; }
+  .site-footer {
+    position: relative; width: 100%; max-width: 820px;
+    margin-top: 18px; padding: 16px 12px;
+    text-align: center; color: rgba(255,255,255,0.85);
+    font-size: 12px; line-height: 1.8;
+  }
+  .site-footer .footer-brand {
+    font-weight: 700; color: #fff; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px;
+  }
+  .site-footer .footer-links {
+    display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+    margin: 6px 0;
+  }
+  .site-footer .footer-links a {
+    color: rgba(255,255,255,0.9); text-decoration: none; font-size: 12px;
+    transition: color 0.2s;
+  }
+  .site-footer .footer-links a:hover { color: #fff; text-decoration: underline; }
+  .site-footer .footer-copy {
+    opacity: 0.75; font-size: 11px; margin-top: 6px;
+  }
+  .site-footer .heart { color: #ff8fa3; }
+  @keyframes popIn { from{opacity:0;transform:translateY(10px) scale(0.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+  @media (max-width:480px){
+    .container{padding:22px 16px;} h1{font-size:22px;} h1 .emoji{font-size:26px;}
+    th,td{font-size:10px;padding:8px 3px;} td:nth-child(1){padding-right:8px;}
+    .nutrient-preview{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<!-- نشانگر وضعیت همگام‌سازی -->
+<div class="sync-status" id="syncStatus">☁️ در حال اتصال...</div>
+
+<!-- ===== مودال پروفایل ===== -->
+<div class="modal-overlay hidden" id="profileOverlay">
+  <div class="profile-modal">
+    <h2>👋 خوش آمدی!</h2>
+    <p class="pm-desc">
+      برای اینکه بتوانم کالری مجاز روزانه‌ات را دقیق محاسبه کنم و داده‌هایت
+      بین همه مرورگرها و دستگاه‌ها همگام شود، لطفاً اطلاعات زیر را وارد کن.
+      این اطلاعات فقط یک‌بار پرسیده می‌شود.
+    </p>
+
+    <div class="form-group">
+      <label>🔑 کد کاربری (یکتا) — مثلاً شماره موبایل یا هر کد دلخواه</label>
+      <input type="text" id="pUserCode" placeholder="مثلاً 09121234567" dir="ltr" style="text-align:left;font-family:monospace;">
+      <div style="font-size:10px;color:#8aa89b;margin-top:4px;">
+        این کد را در همه مرورگرها و دستگاه‌ها یکسان وارد کن تا داده‌هایت همیشه برگردد.
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>قد (سانتی‌متر)</label>
+        <input type="number" id="pHeight" placeholder="مثلاً ۱۷۰" min="80" max="250" step="1">
+      </div>
+      <div class="form-group">
+        <label>وزن (کیلوگرم)</label>
+        <input type="number" id="pWeight" placeholder="مثلاً ۷۰" min="20" max="300" step="0.1">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>سن (سال)</label>
+        <input type="number" id="pAge" placeholder="مثلاً ۲۵" min="10" max="100" step="1">
+      </div>
+      <div class="form-group">
+        <label>سطح فعالیت</label>
+        <select id="pActivity">
+          <option value="1.2">کم‌تحرک (بدون ورزش)</option>
+          <option value="1.375" selected>فعالیت سبک (۱-۳ روز در هفته)</option>
+          <option value="1.55">فعالیت متوسط (۳-۵ روز در هفته)</option>
+          <option value="1.725">فعالیت زیاد (۶-۷ روز در هفته)</option>
+          <option value="1.9">ورزشکار حرفه‌ای</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>جنسیت</label>
+      <div class="radio-group">
+        <input type="radio" name="pGender" id="pMale" value="male" checked>
+        <label for="pMale">👨 مرد</label>
+        <input type="radio" name="pGender" id="pFemale" value="female">
+        <label for="pFemale">👩 زن</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>هدف</label>
+      <select id="pGoal">
+        <option value="maintain" selected>⚖️ حفظ وزن فعلی</option>
+        <option value="lose">📉 کاهش وزن (کمی کمتر از نیاز)</option>
+        <option value="gain">📈 افزایش وزن (کمی بیشتر از نیاز)</option>
+      </select>
+    </div>
+
+    <button class="btn-submit-profile" id="btnSubmitProfile" onclick="submitProfile()">✅ محاسبه و ذخیره در فضای ابری</button>
+
+    <div class="profile-result" id="profileResult"></div>
+  </div>
+</div>
+
+<!-- ===== برنامه اصلی ===== -->
+<div class="container">
+  <h1><span class="emoji">🌱</span> کالری‌شمار سبز</h1>
+  <p class="subtitle">با هر واحدی که بخواهی بشمار — و مراقب کالری مجاز روزانه‌ات باش</p>
+
+  <div class="today-bar">
+    <div class="today-date" id="todayDate">—</div>
+    <div class="today-weekday" id="todayWeekday">—</div>
+    <div class="today-clock" id="todayClock">—</div>
+    <div class="today-week" id="todayWeek">—</div>
+  </div>
+
+  <div class="user-badge" id="userBadge" style="display:none;">
+    <div class="ub-text" id="userBadgeText">—</div>
+    <button class="ub-edit" onclick="openProfile(true)">✏️ ویرایش</button>
+  </div>
+
+  <div class="limit-progress" id="limitProgress" style="display:none;">
+    <div class="lp-labels">
+      <span class="lp-used" id="lpUsed">۰ کالری مصرف‌شده</span>
+      <span id="lpGoal">از ۰ کالری</span>
+    </div>
+    <div class="lp-bar-bg"><div class="lp-bar" id="lpBar"></div></div>
+  </div>
+
+  <div class="input-grid">
+    <input class="full-width" type="text" id="foodName" placeholder="نام غذا (مثلاً: تخم مرغ آبپز)" list="foodList">
+    <datalist id="foodList"></datalist>
+    <input type="number" id="amount" placeholder="مقدار" min="0" step="any" value="1">
+    <select id="unit">
+      <option value="واحد">واحد / عدد</option>
+      <option value="گرم">گرم</option>
+      <option value="پرس">پرس</option>
+      <option value="لیوان">لیوان</option>
+      <option value="قاشق">قاشق</option>
+    </select>
+    <input type="text" id="caloriesDisplay" placeholder="کالری" readonly>
+  </div>
+
+  <p class="unit-info" id="unitInfo"></p>
+
+  <div class="nutrient-preview" id="nutrientPreview" style="display:none;">
+    <div class="item"><span class="val" id="pvCal">۰</span><span class="lbl">کالری</span></div>
+    <div class="item"><span class="val" id="pvFat">۰</span><span class="lbl">چربی (g)</span></div>
+    <div class="item"><span class="val" id="pvSugar">۰</span><span class="lbl">قند (g)</span></div>
+    <div class="item"><span class="val" id="pvCarb">۰</span><span class="lbl">کربوهیدرات (g)</span></div>
+  </div>
+
+  <p class="autofill-badge" id="autofillBadge">✅ مقادیر تغذیه‌ای به صورت خودکار پر شد</p>
+  <p class="hint">اگر واحد «عدد/لیوان/قاشق/پرس» انتخاب کنی، وزن استاندارد همان واحد ملاک است.</p>
+
+  <button class="btn btn-add" onclick="addItem()">➕ افزودن به لیست</button>
+  <button class="btn btn-calc" onclick="calculate()">🧮 محاسبه مجموع</button>
+  <button class="btn btn-endday" onclick="endDay()">🌙 پایان روز و شروع روز جدید</button>
+
+  <div class="alert-box alert-over" id="alertOver">⚠️ کالری دریافتی‌ات از حد مجاز گذشت! باید جلوی اشتهات رو بگیری.</div>
+  <div class="alert-box alert-diet" id="alertDiet">🍰 هله هوله و شیرینی ثبت کردی — مراقب رژیمت باش!</div>
+  <div class="alert-box alert-win" id="alertWin">🎉 امروزم ترکوندی! زیر حد مجاز کالری موندی.</div>
+  <div class="alert-box alert-newday" id="alertNewDay">🌅 روز جدید شروع شد! اگر می‌خواهی روز قبل را ببندی، دکمه «پایان روز» را بزن.</div>
+  <div class="alert-box alert-newweek" id="alertNewWeek">🔄 هفته جدید شروع شد! لیست هفته قبل پاک شد و یک هفته تازه شروع شد.</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>غذا</th>
+          <th>مقدار</th>
+          <th>کالری</th>
+          <th>چربی</th>
+          <th>قند</th>
+          <th>کربو</th>
+          <th>حذف</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="emptyMsg" class="empty"><span class="leaf">🍃</span>هنوز چیزی اضافه نشده است</div>
+  </div>
+
+  <div class="live-total" id="liveTotal">
+    <div class="label">مجموع کالری دریافتی امروز</div>
+    <div class="number" id="liveTotalNum">۰<span class="unit-label">کالری</span></div>
+    <div class="goal-label" id="liveGoal">—</div>
+    <div class="macro-grid">
+      <div class="macro-item"><div class="mv" id="liveFat">۰g</div><div class="ml">چربی</div></div>
+      <div class="macro-item"><div class="mv" id="liveSugar">۰g</div><div class="ml">قند</div></div>
+      <div class="macro-item"><div class="mv" id="liveCarb">۰g</div><div class="ml">کربوهیدرات</div></div>
+    </div>
+  </div>
+
+  <div class="history-box">
+    <h3>
+      <span class="h3-left">📊 تاریخچه این هفته</span>
+      <span class="week-badge" id="weekBadge">—</span>
+    </h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">🌱 کالری‌شمار سبز</div>
+  <div class="footer-links">
+    <a href="#" onclick="return false;">درباره</a>
+    <a href="#" onclick="return false;">حریم خصوصی</a>
+    <a href="#" onclick="return false;">تماس با ما</a>
+  </div>
+  <div class="footer-copy">
+    © <span id="footerYear"></span> کالری‌شمار سبز — تمامی حقوق محفوظ است.
+    <br>ساخته‌شده با <span class="heart">❤</span> برای سلامتی شما
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // بخش ۰: پیکربندی Firebase
+  // ============================================================
+  // ⚠️ این خط را با آدرس Realtime Database خودت جایگزین کن
+  // (از Firebase Console → Realtime Database → بالای صفحه)
+  const FIREBASE_DATABASE_URL = 'https://YOUR-PROJECT-ID-default-rtdb.firebaseio.com';
+
+  // ============================================================
+  // بخش ۱: پایگاه داده غذاها
+  // ============================================================
+  const foodDB = {
+    'تخم مرغ آبپز':        { cal:155, fat:10.6, sugar:1.1, carb:1.1,  unit:50 },
+    'تخم مرغ آب پز':       { cal:155, fat:10.6, sugar:1.1, carb:1.1,  unit:50 },
+    'تخم مرغ':             { cal:143, fat:9.5,  sugar:0.4, carb:0.7,  unit:50 },
+    'تخم مرغ نیمرو':       { cal:196, fat:14.8, sugar:0.4, carb:0.8,  unit:50 },
+    'سفیده تخم مرغ':       { cal:52,  fat:0.2,  sugar:0.7, carb:0.7,  unit:33 },
+    'زرده تخم مرغ':        { cal:322, fat:26.5, sugar:0.6, carb:3.6,  unit:17 },
+    'شیر':                 { cal:61,  fat:3.3,  sugar:4.8, carb:4.8,  glass:244, unit:244 },
+    'شیر پرچرب':           { cal:64,  fat:3.5,  sugar:4.7, carb:4.7,  glass:244, unit:244 },
+    'شیر کم چرب':          { cal:42,  fat:1.0,  sugar:5.0, carb:5.0,  glass:244, unit:244 },
+    'ماست':                { cal:59,  fat:3.3,  sugar:4.7, carb:4.7,  glass:245, spoon:15, unit:170 },
+    'ماست کم چرب':         { cal:56,  fat:1.5,  sugar:5.5, carb:5.5,  glass:245, spoon:15, unit:170 },
+    'پنیر':                { cal:300, fat:22.0, sugar:0.5, carb:3.0,  unit:30, spoon:10 },
+    'پنیر سفید':           { cal:264, fat:20.0, sugar:0.4, carb:2.5,  unit:30, spoon:10 },
+    'کره':                 { cal:717, fat:81.1, sugar:0.1, carb:0.1,  spoon:14, unit:14 },
+    'خامه':                { cal:340, fat:36.0, sugar:2.9, carb:3.0,  spoon:15, glass:240 },
+    'نان':                 { cal:265, fat:3.2,  sugar:5.0, carb:49.0, unit:30 },
+    'نان سنگک':            { cal:250, fat:2.0,  sugar:3.0, carb:50.0, unit:30 },
+    'نان بربری':           { cal:270, fat:2.5,  sugar:4.0, carb:53.0, unit:30 },
+    'نان لواش':            { cal:290, fat:1.5,  sugar:2.0, carb:60.0, unit:20 },
+    'نان تست':             { cal:313, fat:4.3,  sugar:5.7, carb:56.0, unit:25 },
+    'برنج':                { cal:130, fat:0.1,  sugar:0.1, carb:30.0, glass:180, spoon:15, plate:250, unit:180 },
+    'برنج پخته':           { cal:130, fat:0.1,  sugar:0.1, carb:30.0, glass:180, spoon:15, plate:250, unit:180 },
+    'برنج خام':            { cal:361, fat:0.8,  sugar:0.1, carb:79.0, glass:180, spoon:15 },
+    'ماکارونی پخته':       { cal:131, fat:1.1,  sugar:0.6, carb:25.0, glass:140, plate:250 },
+    'ماکارونی خام':        { cal:371, fat:1.5,  sugar:1.0, carb:75.0, glass:100 },
+    'جو':                  { cal:354, fat:2.3,  sugar:0.8, carb:73.0, glass:150, spoon:12 },
+    'جو دوسر':             { cal:389, fat:6.9,  sugar:1.0, carb:66.0, glass:90,  spoon:10 },
+    'بلغور':               { cal:342, fat:1.7,  sugar:0.4, carb:76.0, glass:150, spoon:12 },
+    'آرد':                 { cal:364, fat:1.0,  sugar:0.3, carb:76.0, glass:120, spoon:10 },
+    'مرغ':                 { cal:165, fat:3.6,  sugar:0.0, carb:0.0,  unit:120, plate:200 },
+    'مرغ پخته':            { cal:165, fat:3.6,  sugar:0.0, carb:0.0,  unit:120, plate:200 },
+    'سینه مرغ':            { cal:165, fat:3.6,  sugar:0.0, carb:0.0,  unit:150, plate:200 },
+    'ران مرغ':             { cal:209, fat:10.9, sugar:0.0, carb:0.0,  unit:150, plate:200 },
+    'گوشت':                { cal:250, fat:15.0, sugar:0.0, carb:0.0,  unit:120, plate:200 },
+    'گوشت گوساله':         { cal:250, fat:15.0, sugar:0.0, carb:0.0,  unit:120, plate:200 },
+    'گوشت گوسفند':         { cal:294, fat:21.0, sugar:0.0, carb:0.0,  unit:120, plate:200 },
+    'ماهی':                { cal:206, fat:12.0, sugar:0.0, carb:0.0,  unit:150, plate:200 },
+    'تن ماهی':             { cal:116, fat:0.8,  sugar:0.0, carb:0.0,  unit:120 },
+    'میگو':                { cal:99,  fat:0.3,  sugar:0.0, carb:0.2,  unit:15, spoon:10 },
+    'عدس پخته':            { cal:116, fat:0.4,  sugar:1.8, carb:20.1, glass:200, spoon:15, plate:250 },
+    'لوبیا پخته':          { cal:127, fat:0.5,  sugar:0.3, carb:22.8, glass:180, spoon:15, plate:250 },
+    'نخود پخته':           { cal:164, fat:2.6,  sugar:4.8, carb:27.4, glass:180, spoon:15, plate:250 },
+    'سیب':                 { cal:52,  fat:0.2,  sugar:10.4, carb:13.8, unit:180 },
+    'موز':                 { cal:89,  fat:0.3,  sugar:12.2, carb:22.8, unit:120 },
+    'پرتقال':              { cal:47,  fat:0.1,  sugar:9.4,  carb:11.8, unit:140 },
+    'نارنگی':              { cal:53,  fat:0.3,  sugar:9.0,  carb:13.3, unit:90  },
+    'انگور':               { cal:69,  fat:0.2,  sugar:15.5, carb:18.1, glass:150, unit:5 },
+    'هلو':                 { cal:39,  fat:0.3,  sugar:8.4,  carb:9.5,  unit:150 },
+    'گلابی':               { cal:57,  fat:0.1,  sugar:9.8,  carb:15.2, unit:180 },
+    'هندوانه':             { cal:30,  fat:0.2,  sugar:6.2,  carb:7.6,  glass:150, unit:280 },
+    'خربزه':               { cal:34,  fat:0.2,  sugar:7.9,  carb:8.2,  glass:150, unit:200 },
+    'توت فرنگی':           { cal:32,  fat:0.3,  sugar:4.9,  carb:7.7,  unit:12, glass:150 },
+    'گیلاس':               { cal:50,  fat:0.3,  sugar:12.8, carb:12.2, unit:8,  glass:140 },
+    'آلبالو':              { cal:50,  fat:0.3,  sugar:8.5,  carb:12.2, unit:6,  glass:140 },
+    'زردآلو':              { cal:48,  fat:0.4,  sugar:9.2,  carb:11.1, unit:35 },
+    'کیوی':                { cal:61,  fat:0.5,  sugar:9.0,  carb:14.7, unit:75 },
+    'انار':                { cal:83,  fat:1.2,  sugar:13.7, carb:18.7, unit:150, glass:175 },
+    'خرما':                { cal:282, fat:0.4,  sugar:63.4, carb:75.0, unit:8  },
+    'کشمش':                { cal:299, fat:0.5,  sugar:59.2, carb:79.2, spoon:10 },
+    'سیب زمینی':           { cal:77,  fat:0.1,  sugar:0.8, carb:17.5, unit:150 },
+    'سیب زمینی پخته':      { cal:87,  fat:0.1,  sugar:0.9, carb:20.1, unit:150 },
+    'گوجه فرنگی':          { cal:18,  fat:0.2,  sugar:2.6, carb:3.9,  unit:120 },
+    'خیار':                { cal:15,  fat:0.1,  sugar:1.7, carb:3.6,  unit:150 },
+    'پیاز':                { cal:40,  fat:0.1,  sugar:4.2, carb:9.3,  unit:110 },
+    'هویج':                { cal:41,  fat:0.2,  sugar:4.7, carb:9.6,  unit:60 },
+    'کاهو':                { cal:15,  fat:0.2,  sugar:0.8, carb:2.9,  unit:100 },
+    'اسفناج':              { cal:23,  fat:0.4,  sugar:0.4, carb:3.6,  glass:30, unit:30 },
+    'کلم':                 { cal:25,  fat:0.1,  sugar:3.2, carb:5.8,  unit:100 },
+    'فلفل دلمه':           { cal:26,  fat:0.3,  sugar:4.2, carb:6.0,  unit:120 },
+    'بادمجان':             { cal:25,  fat:0.2,  sugar:3.5, carb:5.9,  unit:150 },
+    'کدو':                 { cal:16,  fat:0.1,  sugar:1.4, carb:3.4,  unit:150 },
+    'قارچ':                { cal:22,  fat:0.3,  sugar:1.7, carb:3.3,  unit:18 },
+    'ذرت':                 { cal:86,  fat:1.2,  sugar:3.2, carb:19.0, unit:90, glass:150 },
+    'نخود فرنگی':          { cal:81,  fat:0.4,  sugar:5.7, carb:14.5, glass:145, spoon:15 },
+    'روغن زیتون':          { cal:884, fat:100.0, sugar:0.0, carb:0.0,  spoon:14 },
+    'روغن':                { cal:884, fat:100.0, sugar:0.0, carb:0.0,  spoon:14 },
+    'بادام':               { cal:579, fat:49.9, sugar:4.4, carb:21.6,  unit:1.2, spoon:9 },
+    'گردو':                { cal:654, fat:65.2, sugar:2.6, carb:13.7,  unit:5,   spoon:8 },
+    'پسته':                { cal:562, fat:45.4, sugar:7.7, carb:27.5,  unit:0.6, spoon:8 },
+    'فندق':                { cal:628, fat:60.8, sugar:4.3, carb:16.7,  unit:1.5, spoon:10 },
+    'کنجد':                { cal:573, fat:49.7, sugar:0.3, carb:23.4,  spoon:9 },
+    'تخمه آفتابگردان':     { cal:584, fat:51.5, sugar:2.6, carb:20.0,  unit:0.8, spoon:9 },
+    'آب':                  { cal:0,   fat:0.0,  sugar:0.0,  carb:0.0,  glass:240 },
+    'چای':                 { cal:1,   fat:0.0,  sugar:0.0,  carb:0.2,  glass:240 },
+    'قهوه':                { cal:2,   fat:0.0,  sugar:0.0,  carb:0.3,  glass:240 },
+    'نوشابه':              { cal:42,  fat:0.0,  sugar:10.6, carb:10.6, glass:330 },
+    'آب پرتقال':           { cal:45,  fat:0.2,  sugar:8.4,  carb:10.4, glass:240 },
+    'عسل':                 { cal:304, fat:0.0,  sugar:82.1, carb:82.4, spoon:21 },
+    'شکر':                 { cal:387, fat:0.0,  sugar:99.8, carb:99.8, spoon:12 },
+    'قند':                 { cal:387, fat:0.0,  sugar:99.8, carb:99.8, unit:5 },
+    'شکلات':               { cal:546, fat:31.0, sugar:52.0, carb:59.0, unit:10, spoon:10 },
+    'بیسکویت':             { cal:450, fat:15.0, sugar:25.0, carb:68.0, unit:10 },
+    'کیک':                 { cal:350, fat:15.0, sugar:30.0, carb:50.0, unit:80 },
+    'شیرینی':              { cal:420, fat:18.0, sugar:35.0, carb:60.0, unit:30 },
+    'شیرینی تر':           { cal:380, fat:16.0, sugar:30.0, carb:52.0, unit:60 },
+    'شیرینی خشک':          { cal:450, fat:20.0, sugar:30.0, carb:62.0, unit:25 },
+    'هله هوله':            { cal:400, fat:18.0, sugar:30.0, carb:55.0, unit:40 },
+    'حلوا':                { cal:420, fat:20.0, sugar:35.0, carb:55.0, unit:50 },
+    'زولبیا':              { cal:450, fat:22.0, sugar:40.0, carb:58.0, unit:20 },
+    'بامیه':               { cal:430, fat:20.0, sugar:38.0, carb:55.0, unit:15 },
+    'کلوچه':               { cal:400, fat:15.0, sugar:25.0, carb:58.0, unit:40 },
+    'نان قندی':            { cal:380, fat:12.0, sugar:22.0, carb:60.0, unit:30 },
+    'پشمک':                { cal:390, fat:10.0, sugar:60.0, carb:70.0, unit:20 },
+    'پیتزا':               { cal:266, fat:10.0, sugar:3.8,  carb:33.0, unit:110, plate:300 },
+    'پیتزا پپرونی':        { cal:298, fat:13.0, sugar:3.5,  carb:34.0, unit:110, plate:300 },
+    'پیتزا مخصوص':         { cal:270, fat:11.0, sugar:3.5,  carb:32.0, unit:110, plate:300 },
+    'همبرگر':              { cal:295, fat:14.0, sugar:5.5,  carb:30.0, unit:150, plate:220 },
+    'چیزبرگر':             { cal:303, fat:15.0, sugar:5.8,  carb:30.0, unit:160, plate:230 },
+    'دوبل برگر':           { cal:350, fat:20.0, sugar:5.5,  carb:28.0, unit:220 },
+    'ساندویچ سرد':         { cal:250, fat:9.0,  sugar:3.5,  carb:30.0, unit:180 },
+    'هات داگ':             { cal:290, fat:17.0, sugar:4.0,  carb:24.0, unit:100 },
+    'سیب زمینی سرخ کرده':  { cal:312, fat:15.0, sugar:0.3,  carb:41.0, plate:150, unit:80 },
+    'مرغ سوخاری':          { cal:290, fat:18.0, sugar:0.5,  carb:11.0, unit:130, plate:200 },
+    'ناگت مرغ':            { cal:296, fat:18.0, sugar:1.5,  carb:18.0, unit:16 },
+    'فلافل':               { cal:333, fat:18.0, sugar:2.0,  carb:32.0, unit:17 },
+    'ساندویچ فلافل':       { cal:280, fat:14.0, sugar:3.0,  carb:31.0, unit:200 },
+    'شاورما':              { cal:250, fat:12.0, sugar:2.0,  carb:22.0, unit:220 },
+    'ساندویچ شاورما':      { cal:260, fat:13.0, sugar:2.5,  carb:24.0, unit:250 },
+    'ساندویچ مرغ':         { cal:230, fat:8.0,  sugar:2.5,  carb:26.0, unit:220 },
+    'ساندویچ کباب':        { cal:270, fat:12.0, sugar:2.0,  carb:27.0, unit:230 },
+    'قارچ سوخاری':         { cal:280, fat:16.0, sugar:1.5,  carb:26.0, unit:20 },
+    'پیاز حلقه‌ای':        { cal:340, fat:18.0, sugar:4.0,  carb:40.0, unit:30 },
+    'تاکو':                { cal:226, fat:10.0, sugar:1.5,  carb:24.0, unit:100 },
+    'برگر مرغ':            { cal:270, fat:12.0, sugar:4.0,  carb:28.0, unit:150 },
+    'سیب زمینی وِج':       { cal:250, fat:12.0, sugar:1.0,  carb:32.0, unit:80 },
+    'کرانچی':              { cal:320, fat:18.0, sugar:1.0,  carb:30.0, unit:100 },
+    'پیتزا سبزیجات':       { cal:220, fat:8.0,  sugar:4.0,  carb:30.0, unit:110, plate:300 },
+    'پیتزا مرغ':           { cal:250, fat:9.0,  sugar:3.5,  carb:31.0, unit:110, plate:300 },
+    'پیتزا پنیر':          { cal:280, fat:12.0, sugar:3.5,  carb:32.0, unit:110, plate:300 },
+    'چیپس':                { cal:536, fat:35.0, sugar:0.5,  carb:53.0, unit:30 },
+    'پاپ کورن':            { cal:387, fat:4.5,  sugar:0.5,  carb:78.0, glass:8, unit:8 },
+    'سوسیس':               { cal:300, fat:25.0, sugar:2.0,  carb:3.0,  unit:50 },
+    'کالباس':              { cal:250, fat:20.0, sugar:2.5,  carb:4.0,  unit:30 },
+  };
+
+  const FOOD_EMOJI = {
+    'تخم مرغ آبپز': '🥚', 'تخم مرغ آب پز': '🥚', 'تخم مرغ': '🥚', 'تخم مرغ نیمرو': '🍳',
+    'سفیده تخم مرغ': '🥚', 'زرده تخم مرغ': '🥚',
+    'شیر': '🥛', 'شیر پرچرب': '🥛', 'شیر کم چرب': '🥛',
+    'ماست': '🥣', 'ماست کم چرب': '🥣',
+    'پنیر': '🧀', 'پنیر سفید': '🧀', 'کره': '🧈', 'خامه': '🥛',
+    'نان': '🍞', 'نان سنگک': '🥖', 'نان بربری': '🥖', 'نان لواش': '🫓', 'نان تست': '🍞',
+    'برنج': '🍚', 'برنج پخته': '🍚', 'برنج خام': '🌾',
+    'ماکارونی پخته': '🍝', 'ماکارونی خام': '🌾',
+    'جو': '🌾', 'جو دوسر': '🥣', 'بلغور': '🌾', 'آرد': '🌾',
+    'مرغ': '🍗', 'مرغ پخته': '🍗', 'سینه مرغ': '🍗', 'ران مرغ': '🍗',
+    'گوشت': '🥩', 'گوشت گوساله': '🥩', 'گوشت گوسفند': '🥩',
+    'ماهی': '🐟', 'تن ماهی': '🐟', 'میگو': '🦐',
+    'عدس پخته': '🫘', 'لوبیا پخته': '🫘', 'نخود پخته': '🫘',
+    'سیب': '🍎', 'موز': '🍌', 'پرتقال': '🍊', 'نارنگی': '🍊', 'انگور': '🍇',
+    'هلو': '🍑', 'گلابی': '🍐', 'هندوانه': '🍉', 'خربزه': '🍈',
+    'توت فرنگی': '🍓', 'گیلاس': '🍒', 'آلبالو': '🍒', 'زردآلو': '🍑',
+    'کیوی': '🥝', 'انار': '🍎', 'خرما': '🌴', 'کشمش': '🍇',
+    'سیب زمینی': '🥔', 'سیب زمینی پخته': '🥔', 'گوجه فرنگی': '🍅', 'خیار': '🥒',
+    'پیاز': '🧅', 'هویج': '🥕', 'کاهو': '🥬', 'اسفناج': '🥬', 'کلم': '🥬',
+    'فلفل دلمه': '🫑', 'بادمجان': '🍆', 'کدو': '🥒', 'قارچ': '🍄',
+    'ذرت': '🌽', 'نخود فرنگی': '🫛',
+    'روغن زیتون': '🫒', 'روغن': '🛢️', 'بادام': '🌰', 'گردو': '🌰',
+    'پسته': '🌰', 'فندق': '🌰', 'کنجد': '🌰', 'تخمه آفتابگردان': '🌻',
+    'آب': '💧', 'چای': '🍵', 'قهوه': '☕', 'نوشابه': '🥤', 'آب پرتقال': '🧃',
+    'عسل': '🍯', 'شکر': '🍬', 'قند': '🍬', 'شکلات': '🍫', 'بیسکویت': '🍪',
+    'کیک': '🍰', 'شیرینی': '🧁', 'شیرینی تر': '🍰', 'شیرینی خشک': '🍪',
+    'هله هوله': '🍿', 'حلوا': '🍮', 'زولبیا': '🍩', 'بامیه': '🍩',
+    'کلوچه': '🥮', 'نان قندی': '🍞', 'پشمک': '🍬',
+    'پیتزا': '🍕', 'پیتزا پپرونی': '🍕', 'پیتزا مخصوص': '🍕',
+    'همبرگر': '🍔', 'چیزبرگر': '🍔', 'دوبل برگر': '🍔', 'ساندویچ سرد': '🥪',
+    'هات داگ': '🌭', 'سیب زمینی سرخ کرده': '🍟', 'مرغ سوخاری': '🍗',
+    'ناگت مرغ': '🍗', 'فلافل': '🧆', 'ساندویچ فلافل': '🥙',
+    'شاورما': '🌯', 'ساندویچ شاورما': '🌯', 'ساندویچ مرغ': '🥪', 'ساندویچ کباب': '🥪',
+    'قارچ سوخاری': '🍄', 'پیاز حلقه‌ای': '🧅', 'تاکو': '🌮', 'برگر مرغ': '🍔',
+    'سیب زمینی وِج': '🍟', 'کرانچی': '🍗', 'پیتزا سبزیجات': '🍕',
+    'پیتزا مرغ': '🍕', 'پیتزا پنیر': '🍕', 'چیپس': '🥔', 'پاپ کورن': '🍿',
+    'سوسیس': '🌭', 'کالباس': '🥓',
+  };
+
+  // ============================================================
+  // بخش ۲: توابع تاریخ شمسی
+  // ============================================================
+  function toJalali(gy, gm, gd) {
+    const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    let jy = (gy <= 1600) ? 0 : 979;
+    gy -= (gy <= 1600) ? 621 : 1600;
+    const gy2 = (gm > 2) ? (gy + 1) : gy;
+    let days = (365 * gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100)
+             + Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+    jy += 33 * Math.floor(days / 12053);
+    days %= 12053;
+    jy += 4 * Math.floor(days / 1461);
+    days %= 1461;
+    if (days > 365) {
+      jy += Math.floor((days - 1) / 365);
+      days = (days - 1) % 365;
+    }
+    const jm = (days < 186) ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30);
+    const jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+    return { jy, jm, jd };
+  }
+  const JALALI_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const WEEKDAYS_FA = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+
+  function getJalaliInfo(date) {
+    const j = toJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    return {
+      jy: j.jy, jm: j.jm, jd: j.jd,
+      monthName: JALALI_MONTHS[j.jm - 1],
+      weekday: WEEKDAYS_FA[date.getDay()],
+      dateLabel: `${j.jd} ${JALALI_MONTHS[j.jm - 1]} ${j.jy}`,
+      fullLabel: `${WEEKDAYS_FA[date.getDay()]} ${j.jd} ${JALALI_MONTHS[j.jm - 1]} ${j.jy}`,
+    };
+  }
+  function getTodayKey() {
+    const d = new Date();
+    const j = toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    return `${j.jy}-${String(j.jm).padStart(2,'0')}-${String(j.jd).padStart(2,'0')}`;
+  }
+  function getIranWeekKey(date) {
+    const d = new Date(date);
+    const dow = d.getDay();
+    const daysSinceSat = (dow + 1) % 7;
+    d.setDate(d.getDate() - daysSinceSat);
+    const j = toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    return `${j.jy}-${String(j.jm).padStart(2,'0')}-${String(j.jd).padStart(2,'0')}`;
+  }
+  function getIranWeekLabel(date) {
+    const d = new Date(date);
+    const dow = d.getDay();
+    const daysSinceSat = (dow + 1) % 7;
+    const sat = new Date(d);
+    sat.setDate(d.getDate() - daysSinceSat);
+    const fri = new Date(sat);
+    fri.setDate(sat.getDate() + 6);
+    const js = toJalali(sat.getFullYear(), sat.getMonth() + 1, sat.getDate());
+    const jf = toJalali(fri.getFullYear(), fri.getMonth() + 1, fri.getDate());
+    return `${js.jd} ${JALALI_MONTHS[js.jm - 1]} تا ${jf.jd} ${JALALI_MONTHS[jf.jm - 1]}`;
+  }
+
+  // ============================================================
+  // بخش ۳: ذخیره‌سازی محلی + همگام‌سازی ابری
+  // ============================================================
+  const LS_PROFILE = 'calorie_app_profile_v3';
+  const LS_ITEMS = 'calorie_app_items_v3';
+  const LS_HISTORY = 'calorie_app_history_v3';
+  const LS_CURRENT_WEEK = 'calorie_app_current_week_v3';
+  const LS_USER_CODE = 'calorie_app_usercode_v3';
+
+  let profile = null;
+  let dailyLimit = 1200;
+  let items = [];
+  let history = [];
+  let currentWeekKey = '';
+  let lastDayKey = null;
+  let clockTimer = null;
+  let userCode = '';
+  let syncEnabled = false;
+  let syncTimer = null;
+
+  const SWEET_KEYWORDS = ['شیرینی','هله هوله','حلوا','زولبیا','بامیه','کلوچه','نان قندی','پشمک','شکلات','کیک','بیسکویت','عسل','شکر','قند'];
+  const DEFAULT_UNIT_WEIGHT = 100;
+  const DEFAULT_PLATE_WEIGHT = 250;
+  const DEFAULT_SPOON_WEIGHT = 15;
+  const DEFAULT_GLASS_WEIGHT = 240;
+
+  function normalize(str) {
+    return str.replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  const normalizedDB = {};
+  for (const [key, val] of Object.entries(foodDB)) {
+    normalizedDB[normalize(key)] = val;
+  }
+
+  function safeStorageSet(key, value) {
+    try { localStorage.setItem(key, value); return true; }
+    catch(e) { console.warn('ذخیره نشد:', key, e); return false; }
+  }
+  function safeStorageGet(key) {
+    try { return localStorage.getItem(key); }
+    catch(e) { return null; }
+  }
+
+  function saveProfile() { safeStorageSet(LS_PROFILE, JSON.stringify(profile)); }
+  function loadProfile() {
+    const raw = safeStorageGet(LS_PROFILE);
+    if (raw) { try { profile = JSON.parse(raw); } catch(e) { profile = null; } }
+  }
+  function saveItems() { safeStorageSet(LS_ITEMS, JSON.stringify(items)); }
+  function loadItems() {
+    const raw = safeStorageGet(LS_ITEMS);
+    if (raw) { try { items = JSON.parse(raw) || []; } catch(e) { items = []; } }
+  }
+  function saveHistory() { safeStorageSet(LS_HISTORY, JSON.stringify(history)); }
+  function loadHistory() {
+    const raw = safeStorageGet(LS_HISTORY);
+    if (raw) { try { history = JSON.parse(raw) || []; } catch(e) { history = []; } }
+  }
+  function saveCurrentWeek() { safeStorageSet(LS_CURRENT_WEEK, currentWeekKey); }
+  function loadCurrentWeek() {
+    const raw = safeStorageGet(LS_CURRENT_WEEK);
+    if (raw) currentWeekKey = raw;
+  }
+
+  // ============================================================
+  // بخش ۴: Firebase Realtime Database (REST API بدون SDK)
+  // ============================================================
+  function firebaseUrl(path) {
+    return `${FIREBASE_DATABASE_URL}/${path}.json`;
+  }
+
+  async function cloudSave(key, data) {
+    if (!syncEnabled || !userCode) return false;
+    try {
+      const res = await fetch(firebaseUrl(`users/${encodeURIComponent(userCode)}/${key}`), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return res.ok;
+    } catch(e) {
+      console.warn('خطا در ذخیره ابری:', key, e);
+      return false;
+    }
+  }
+
+  async function cloudLoad(key) {
+    if (!syncEnabled || !userCode) return null;
+    try {
+      const res = await fetch(firebaseUrl(`users/${encodeURIComponent(userCode)}/${key}`));
+      if (!res.ok) return null;
+      return await res.json();
+    } catch(e) {
+      console.warn('خطا در خواندن ابری:', key, e);
+      return null;
+    }
+  }
+
+  function setSyncStatus(ok) {
+    const el = document.getElementById('syncStatus');
+    if (!el) return;
+    if (!syncEnabled) {
+      el.textContent = '💾 حالت آفلاین';
+      el.classList.add('offline');
+      el.classList.add('show');
+      return;
+    }
+    if (ok) {
+      el.textContent = '☁️ همگام با فضای ابری';
+      el.classList.remove('offline');
+    } else {
+      el.textContent = '⚠️ اتصال ابری ناموفق — حالت آفلاین';
+      el.classList.add('offline');
+    }
+    el.classList.add('show');
+  }
+
+  // ذخیره همه چیز در فضای ابری (با تأخیر برای جلوگیری از درخواست زیاد)
+  function scheduleCloudSave() {
+    if (!syncEnabled || !userCode) return;
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(async () => {
+      let ok = true;
+      if (profile) ok = await cloudSave('profile', profile) && ok;
+      ok = await cloudSave('items', items) && ok;
+      ok = await cloudSave('history', history) && ok;
+      ok = await cloudSave('currentWeekKey', currentWeekKey) && ok;
+      setSyncStatus(ok);
+    }, 800);
+  }
+
+  // ============================================================
+  // بخش ۵: پروفایل و TDEE
+  // ============================================================
+  function calculateTDEE(p) {
+    let bmr;
+    if (p.gender === 'male') {
+      bmr = (10 * p.weight) + (6.25 * p.height) - (5 * p.age) + 5;
+    } else {
+      bmr = (10 * p.weight) + (6.25 * p.height) - (5 * p.age) - 161;
+    }
+    const tdee = bmr * p.activity;
+    let target = tdee;
+    if (p.goal === 'lose') target = tdee - 500;
+    else if (p.goal === 'gain') target = tdee + 300;
+    const minSafe = p.gender === 'male' ? 1500 : 1200;
+    target = Math.max(target, minSafe);
+    return { bmr: Math.round(bmr), tdee: Math.round(tdee), target: Math.round(target) };
+  }
+
+  function applyProfile() {
+    if (!profile) return;
+    const r = calculateTDEE(profile);
+    dailyLimit = r.target;
+    const genderLabel = profile.gender === 'male' ? '👨' : '👩';
+    const goalLabel = profile.goal === 'maintain' ? 'حفظ وزن' : profile.goal === 'lose' ? 'کاهش وزن' : 'افزایش وزن';
+    const badgeText = document.getElementById('userBadgeText');
+    if (badgeText) {
+      badgeText.innerHTML =
+        `${genderLabel} قد ${profile.height} | وزن ${profile.weight} | سن ${profile.age} | ${goalLabel}<br>` +
+        `🎯 کالری مجاز روزانه: <strong>${r.target.toLocaleString('fa-IR')} کالری</strong>`;
+    }
+    const badge = document.getElementById('userBadge');
+    if (badge) badge.style.display = 'flex';
+    const lp = document.getElementById('limitProgress');
+    if (lp) lp.style.display = 'block';
+    const lpGoal = document.getElementById('lpGoal');
+    if (lpGoal) lpGoal.textContent = `از ${r.target.toLocaleString('fa-IR')} کالری`;
+    updateLiveTotal();
+  }
+
+  function openProfile(isEdit = false) {
+    if (profile) {
+      document.getElementById('pHeight').value = profile.height;
+      document.getElementById('pWeight').value = profile.weight;
+      document.getElementById('pAge').value = profile.age;
+      document.getElementById('pActivity').value = profile.activity;
+      document.getElementById('pGoal').value = profile.goal;
+      document.getElementById(profile.gender === 'male' ? 'pMale' : 'pFemale').checked = true;
+    }
+    if (userCode) {
+      document.getElementById('pUserCode').value = userCode;
+    }
+    document.getElementById('btnSubmitProfile').textContent =
+      isEdit ? '✅ ذخیره تغییرات' : '✅ محاسبه و ذخیره در فضای ابری';
+    document.getElementById('profileResult').classList.remove('show');
+    document.getElementById('profileOverlay').classList.remove('hidden');
+  }
+
+  async function submitProfile() {
+    const code = document.getElementById('pUserCode').value.trim();
+    const height = parseFloat(document.getElementById('pHeight').value);
+    const weight = parseFloat(document.getElementById('pWeight').value);
+    const age = parseInt(document.getElementById('pAge').value);
+    const activity = parseFloat(document.getElementById('pActivity').value);
+    const gender = document.querySelector('input[name="pGender"]:checked').value;
+    const goal = document.getElementById('pGoal').value;
+
+    if (!code) { alert('کد کاربری را وارد کن'); return; }
+    if (code.length < 3) { alert('کد کاربری حداقل ۳ کاراکتر باشد'); return; }
+    if (!height || height < 80 || height > 250) { alert('قد معتبر وارد کن (۸۰ تا ۲۵۰ سانتی‌متر)'); return; }
+    if (!weight || weight < 20 || weight > 300) { alert('وزن معتبر وارد کن (۲۰ تا ۳۰۰ کیلوگرم)'); return; }
+    if (!age || age < 10 || age > 100) { alert('سن معتبر وارد کن (۱۰ تا ۱۰۰ سال)'); return; }
+
+    const oldWeight = profile ? profile.weight : null;
+    const oldCode = userCode;
+
+    userCode = code;
+    safeStorageSet(LS_USER_CODE, userCode);
+    profile = { height, weight, age, activity, gender, goal, updatedAt: Date.now() };
+    saveProfile();
+
+    const r = calculateTDEE(profile);
+    const resultEl = document.getElementById('profileResult');
+    resultEl.classList.add('show');
+    const bmrFa = r.bmr.toLocaleString('fa-IR');
+    const tdeeFa = r.tdee.toLocaleString('fa-IR');
+    const targetFa = r.target.toLocaleString('fa-IR');
+    const activityLabel = {
+      '1.2':'کم‌تحرک', '1.375':'فعالیت سبک', '1.55':'فعالیت متوسط',
+      '1.725':'فعالیت زیاد', '1.9':'ورزشکار'
+    }[String(activity)] || '';
+
+    let weightMsg = '';
+    if (oldWeight !== null && oldWeight !== weight) {
+      const diff = (weight - oldWeight).toFixed(1);
+      const sign = diff > 0 ? '+' : '';
+      weightMsg = `<div style="margin-top:6px;font-size:12px;color:#1a5c45;">
+        ⚖️ تغییر وزن: از ${oldWeight} به ${weight} کیلوگرم (${sign}${diff} کیلو)
+      </div>`;
+    }
+
+    resultEl.innerHTML = `
+      <div>🔬 متابولیسم پایه (BMR): <strong>${bmrFa} کالری</strong></div>
+      <div>🏃 کالری مصرفی روزانه با فعالیت (TDEE): <strong>${tdeeFa} کالری</strong></div>
+      <div>🎯 هدف تو (${activityLabel}): <strong>${targetFa} کالری در روز</strong></div>
+      ${weightMsg}
+      <div style="margin-top:8px;font-size:11px;color:#6b8a7d;">
+        از این به بعد اگر بیشتر از ${targetFa} کالری مصرف کنی هشدار می‌گیری،
+        و اگر مساوی یا کمتر باشی پیام موفقیت می‌بینی.
+      </div>
+    `;
+
+    // فعال‌سازی همگام‌سازی ابری
+    syncEnabled = true;
+    setSyncStatus(true);
+
+    // اگر کد عوض شده، ابتدا از ابر داده‌های کد جدید را بخوان
+    if (oldCode !== code) {
+      await loadFromCloud();
+    } else {
+      await saveToCloud();
+    }
+
+    setTimeout(() => {
+      document.getElementById('profileOverlay').classList.add('hidden');
+      applyProfile();
+      render();
+      updateLiveTotal();
+      renderHistory();
+      updateDateBar();
+    }, 2500);
+  }
+
+  async function loadFromCloud() {
+    if (!userCode) return;
+    try {
+      const [cloudProfile, cloudItems, cloudHistory, cloudWeek] = await Promise.all([
+        cloudLoad('profile'),
+        cloudLoad('items'),
+        cloudLoad('history'),
+        cloudLoad('currentWeekKey'),
+      ]);
+      if (cloudProfile) {
+        profile = cloudProfile;
+        saveProfile();
+      }
+      if (Array.isArray(cloudItems)) {
+        items = cloudItems;
+        saveItems();
+      }
+      if (Array.isArray(cloudHistory)) {
+        history = cloudHistory;
+        saveHistory();
+      }
+      if (cloudWeek) {
+        currentWeekKey = cloudWeek;
+        saveCurrentWeek();
+      }
+      setSyncStatus(true);
+    } catch(e) {
+      console.warn('خطا در بارگذاری ابری:', e);
+      setSyncStatus(false);
+    }
+  }
+
+  async function saveToCloud() {
+    if (!userCode) return;
+    await scheduleCloudSave();
+  }
+
+  // ============================================================
+  // بخش ۶: هشدارها
+  // ============================================================
+  function showAlert(id, duration = 6000) {
+    try {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('show');
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.remove('show'), duration);
+    } catch(e) { console.warn('خطا در نمایش هشدار:', e); }
+  }
+
+  // ============================================================
+  // بخش ۷: به‌روزرسانی نوار تاریخ
+  // ============================================================
+  function updateDateBar() {
+    try {
+      const now = new Date();
+      const info = getJalaliInfo(now);
+
+      const dateEl = document.getElementById('todayDate');
+      const weekdayEl = document.getElementById('todayWeekday');
+      const clockEl = document.getElementById('todayClock');
+      const weekEl = document.getElementById('todayWeek');
+      const weekBadgeEl = document.getElementById('weekBadge');
+
+      if (dateEl) dateEl.textContent = `📅 ${info.dateLabel}`;
+      if (weekdayEl) weekdayEl.textContent = `🗓️ ${info.weekday}`;
+
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      if (clockEl) clockEl.textContent = `⏰ ${hh}:${mm} (به وقت دستگاه شما)`;
+
+      const weekLabel = getIranWeekLabel(now);
+      if (weekEl) weekEl.textContent = `هفته: ${weekLabel}`;
+      if (weekBadgeEl) weekBadgeEl.textContent = weekLabel;
+
+      const dayKey = getTodayKey();
+      if (lastDayKey && lastDayKey !== dayKey && items.length > 0) {
+        try { showAlert('alertNewDay', 10000); } catch(e) {}
+      }
+      lastDayKey = dayKey;
+
+      try {
+        if (checkWeekChange()) {
+          showAlert('alertNewWeek', 10000);
+          render();
+          updateLiveTotal();
+        }
+      } catch(e) {}
+    } catch (err) {
+      console.error('خطا در به‌روزرسانی تاریخ:', err);
+    }
+  }
+
+  function startClock() {
+    updateDateBar();
+    if (clockTimer) clearInterval(clockTimer);
+    clockTimer = setInterval(updateDateBar, 30000);
+  }
+
+  // ============================================================
+  // بخش ۸: مدیریت هفته
+  // ============================================================
+  function checkWeekChange() {
+    const nowKey = getIranWeekKey(new Date());
+    if (!currentWeekKey) {
+      currentWeekKey = nowKey;
+      saveCurrentWeek();
+      scheduleCloudSave();
+      return false;
+    }
+    if (currentWeekKey !== nowKey) {
+      currentWeekKey = nowKey;
+      saveCurrentWeek();
+      items = [];
+      saveItems();
+      scheduleCloudSave();
+      return true;
+    }
+    return false;
+  }
+
+  // ============================================================
+  // بخش ۹: جستجوی غذا
+  // ============================================================
+  function lookupFood(name) {
+    if (!name) return null;
+    const norm = normalize(name);
+    if (normalizedDB[norm]) return normalizedDB[norm];
+    for (const [key, val] of Object.entries(normalizedDB)) {
+      if (key.includes(norm) || norm.includes(key)) return val;
+    }
+    return null;
+  }
+
+  function isSweet(name) {
+    const norm = normalize(name);
+    return SWEET_KEYWORDS.some(k => norm.includes(normalize(k)));
+  }
+
+  function guessEmojiByName(name) {
+    if (FOOD_EMOJI[name]) return FOOD_EMOJI[name];
+    const n = normalize(name);
+    for (const [key, emoji] of Object.entries(FOOD_EMOJI)) {
+      if (normalize(key) === n) return emoji;
+    }
+    if (/(تخم|نیمرو)/.test(n)) return '🥚';
+    if (/(شیر|ماست|پنیر|کره|خامه|لبنیات)/.test(n)) return '🥛';
+    if (/(نان|تست|لواش|سنگک|بربری)/.test(n)) return '🍞';
+    if (/(برنج|پلو)/.test(n)) return '🍚';
+    if (/(ماکارونی|پاستا|اسپاگتی)/.test(n)) return '🍝';
+    if (/(گوشت|استیک|کباب|گوساله|گوسفند)/.test(n)) return '🥩';
+    if (/(مرغ|جوجه)/.test(n)) return '🍗';
+    if (/(ماهی|تن|سالمون)/.test(n)) return '🐟';
+    if (/(میگو|خرچنگ)/.test(n)) return '🦐';
+    if (/(سیب|انار)/.test(n)) return '🍎';
+    if (/(موز)/.test(n)) return '🍌';
+    if (/(پرتقال|نارنگی)/.test(n)) return '🍊';
+    if (/(انگور|کشمش)/.test(n)) return '🍇';
+    if (/(هندوانه)/.test(n)) return '🍉';
+    if (/(توت|گیلاس|آلبالو)/.test(n)) return '🍒';
+    if (/(سیب زمینی|چیپس)/.test(n)) return '🥔';
+    if (/(گوجه)/.test(n)) return '🍅';
+    if (/(خیار|کدو)/.test(n)) return '🥒';
+    if (/(هویج)/.test(n)) return '🥕';
+    if (/(قارچ)/.test(n)) return '🍄';
+    if (/(ذرت)/.test(n)) return '🌽';
+    if (/(بادمجان)/.test(n)) return '🍆';
+    if (/(فلفل)/.test(n)) return '🫑';
+    if (/(پیاز)/.test(n)) return '🧅';
+    if (/(کاهو|اسفناج|کلم|سبزی)/.test(n)) return '🥬';
+    if (/(روغن|زیتون)/.test(n)) return '🫒';
+    if (/(بادام|گردو|پسته|فندق|کنجد|تخمه|آجیل)/.test(n)) return '🌰';
+    if (/(چای)/.test(n)) return '🍵';
+    if (/(قهوه)/.test(n)) return '☕';
+    if (/(نوشابه|آب پرتقال|آبمیوه)/.test(n)) return '🥤';
+    if (/(عسل)/.test(n)) return '🍯';
+    if (/(شکر|قند|پشمک)/.test(n)) return '🍬';
+    if (/(شکلات)/.test(n)) return '🍫';
+    if (/(بیسکویت|کلوچه)/.test(n)) return '🍪';
+    if (/(کیک|شیرینی)/.test(n)) return '🍰';
+    if (/(زولبیا|بامیه)/.test(n)) return '🍩';
+    if (/(پیتزا)/.test(n)) return '🍕';
+    if (/(برگر|همبرگر)/.test(n)) return '🍔';
+    if (/(هات داگ|سوسیس|کالباس)/.test(n)) return '🌭';
+    if (/(سیب زمینی سرخ|سیب زمینی وِج)/.test(n)) return '🍟';
+    if (/(فلافل|ساندویچ)/.test(n)) return '🥙';
+    if (/(شاورما)/.test(n)) return '🌯';
+    if (/(تاکو)/.test(n)) return '🌮';
+    if (/(چیپس)/.test(n)) return '🥔';
+    if (/(پاپ کورن|هله هوله)/.test(n)) return '🍿';
+    if (/(قارچ سوخاری)/.test(n)) return '🍄';
+    if (/(عدس|لوبیا|نخود)/.test(n)) return '🫘';
+    if (/(جو|بلغور|آرد|گندم)/.test(n)) return '🌾';
+    return '🍽️';
+  }
+
+  function weightPerUnit(food, unit) {
+    if (unit === 'گرم') return 1;
+    if (unit === 'واحد') return food.unit || DEFAULT_UNIT_WEIGHT;
+    if (unit === 'پرس') return food.plate || DEFAULT_PLATE_WEIGHT;
+    if (unit === 'لیوان') return food.glass || DEFAULT_GLASS_WEIGHT;
+    if (unit === 'قاشق') return food.spoon || DEFAULT_SPOON_WEIGHT;
+    return 1;
+  }
+
+  function calcNutrition(food, amount, unit) {
+    const gramsPerUnit = weightPerUnit(food, unit);
+    const totalGrams = amount * gramsPerUnit;
+    const factor = totalGrams / 100;
+    return {
+      grams: totalGrams,
+      cal: Math.round(food.cal * factor),
+      fat: +(food.fat * factor).toFixed(1),
+      sugar: +(food.sugar * factor).toFixed(1),
+      carb: +(food.carb * factor).toFixed(1),
+    };
+  }
+
+  function autoFill() {
+    const name = document.getElementById('foodName').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    const unit = document.getElementById('unit').value;
+    const data = lookupFood(name);
+    const badge = document.getElementById('autofillBadge');
+    const preview = document.getElementById('nutrientPreview');
+    const unitInfo = document.getElementById('unitInfo');
+
+    if (data && !isNaN(amount) && amount > 0) {
+      const n = calcNutrition(data, amount, unit);
+      document.getElementById('caloriesDisplay').value = n.cal.toLocaleString('fa-IR');
+      document.getElementById('pvCal').textContent = n.cal.toLocaleString('fa-IR');
+      document.getElementById('pvFat').textContent = n.fat.toLocaleString('fa-IR');
+      document.getElementById('pvSugar').textContent = n.sugar.toLocaleString('fa-IR');
+      document.getElementById('pvCarb').textContent = n.carb.toLocaleString('fa-IR');
+      preview.style.display = 'grid';
+      badge.classList.add('show');
+      const wpu = weightPerUnit(data, unit);
+      if (unit === 'گرم') {
+        unitInfo.textContent = `وزن: ${n.grams.toLocaleString('fa-IR')} گرم`;
+      } else {
+        unitInfo.textContent = `هر ۱ ${unit} ≈ ${wpu.toLocaleString('fa-IR')} گرم → مجموع ${n.grams.toLocaleString('fa-IR')} گرم`;
+      }
+    } else {
+      document.getElementById('caloriesDisplay').value = '';
+      preview.style.display = 'none';
+      badge.classList.remove('show');
+      unitInfo.textContent = '';
+    }
+  }
+
+  // ============================================================
+  // بخش ۱۰: افزودن / حذف / رندر
+  // ============================================================
+  function addItem() {
+    const name = document.getElementById('foodName').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+    const unit = document.getElementById('unit').value;
+    const data = lookupFood(name);
+
+    if (!name) { alert('نام غذا را وارد کنید'); return; }
+    if (isNaN(amount) || amount <= 0) { alert('مقدار معتبر وارد کنید'); return; }
+    if (!data) { alert('این غذا در پایگاه داده نیست. لطفاً از لیست پیشنهادی انتخاب کنید.'); return; }
+
+    const n = calcNutrition(data, amount, unit);
+    const emoji = guessEmojiByName(name);
+    items.push({ name, amount, unit, emoji, ...n });
+    saveItems();
+    scheduleCloudSave();
+    render();
+    updateLiveTotal();
+
+    if (isSweet(name)) showAlert('alertDiet');
+
+    document.getElementById('foodName').value = '';
+    document.getElementById('amount').value = 1;
+    document.getElementById('caloriesDisplay').value = '';
+    document.getElementById('nutrientPreview').style.display = 'none';
+    document.getElementById('autofillBadge').classList.remove('show');
+    document.getElementById('unitInfo').textContent = '';
+    document.getElementById('foodName').focus();
+  }
+
+  function getTotals() {
+    return items.reduce((s, i) => ({
+      cal: s.cal + i.cal,
+      fat: +(s.fat + i.fat).toFixed(1),
+      sugar: +(s.sugar + i.sugar).toFixed(1),
+      carb: +(s.carb + i.carb).toFixed(1),
+    }), { cal: 0, fat: 0, sugar: 0, carb: 0 });
+  }
+
+  function updateLiveTotal() {
+    try {
+      const t = getTotals();
+      const box = document.getElementById('liveTotal');
+      document.getElementById('liveTotalNum').innerHTML =
+        `${t.cal.toLocaleString('fa-IR')}<span class="unit-label">کالری</span>`;
+      document.getElementById('liveFat').textContent = t.fat.toLocaleString('fa-IR') + 'g';
+      document.getElementById('liveSugar').textContent = t.sugar.toLocaleString('fa-IR') + 'g';
+      document.getElementById('liveCarb').textContent = t.carb.toLocaleString('fa-IR') + 'g';
+      document.getElementById('liveGoal').textContent = `از ${dailyLimit.toLocaleString('fa-IR')} کالری مجاز`;
+
+      const pct = Math.min(100, Math.round((t.cal / dailyLimit) * 100));
+      document.getElementById('lpBar').style.width = pct + '%';
+      document.getElementById('lpUsed').textContent = `${t.cal.toLocaleString('fa-IR')} کالری مصرف‌شده`;
+      document.getElementById('lpGoal').textContent = `از ${dailyLimit.toLocaleString('fa-IR')} کالری`;
+
+      if (t.cal > dailyLimit) {
+        box.classList.add('over');
+        document.getElementById('lpBar').classList.add('over');
+        showAlert('alertOver');
+      } else {
+        box.classList.remove('over');
+        document.getElementById('lpBar').classList.remove('over');
+      }
+    } catch(e) { console.warn('خطا در به‌روزرسانی مجموع:', e); }
+  }
+
+  function render() {
+    const tbody = document.getElementById('tableBody');
+    const emptyMsg = document.getElementById('emptyMsg');
+    tbody.innerHTML = '';
+    if (items.length === 0) { emptyMsg.style.display = 'block'; return; }
+    emptyMsg.style.display = 'none';
+    items.forEach((item, index) => {
+      const emoji = item.emoji || guessEmojiByName(item.name);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="food-cell"><span class="food-emoji">${emoji}</span><span>${escapeHtml(item.name)}</span></span></td>
+        <td>${item.amount.toLocaleString('fa-IR')} ${item.unit}<span class="grams">${item.grams.toLocaleString('fa-IR')}g</span></td>
+        <td><span class="cal-value">${item.cal.toLocaleString('fa-IR')}</span></td>
+        <td>${item.fat.toLocaleString('fa-IR')}g</td>
+        <td>${item.sugar.toLocaleString('fa-IR')}g</td>
+        <td>${item.carb.toLocaleString('fa-IR')}g</td>
+        <td><button class="btn btn-del" onclick="removeItem(${index})">حذف</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function removeItem(index) {
+    items.splice(index, 1);
+    saveItems();
+    scheduleCloudSave();
+    render();
+    updateLiveTotal();
+  }
+
+  function calculate() {
+    if (items.length === 0) { alert('ابتدا غذایی اضافه کنید'); return; }
+    const t = getTotals();
+    if (t.cal > dailyLimit) showAlert('alertOver');
+    else showAlert('alertWin');
+    document.getElementById('liveTotal').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ============================================================
+  // بخش ۱۱: پایان روز
+  // ============================================================
+  function endDay() {
+    if (items.length === 0) { alert('امروز چیزی ثبت نکردی که بخوام جمع‌بندی کنم!'); return; }
+    const t = getTotals();
+    const now = new Date();
+    const info = getJalaliInfo(now);
+    const weekKey = getIranWeekKey(now);
+    const weekLabel = getIranWeekLabel(now);
+
+    const existingIdx = history.findIndex(h => h.date === getTodayKey());
+    const entry = {
+      date: getTodayKey(),
+      label: info.fullLabel,
+      weekKey: weekKey,
+      weekLabel: weekLabel,
+      cal: t.cal, fat: t.fat, sugar: t.sugar, carb: t.carb,
+      count: items.length,
+      limit: dailyLimit,
+    };
+    if (existingIdx >= 0) history[existingIdx] = entry;
+    else history.unshift(entry);
+
+    history = history.filter(h => h.weekKey === weekKey).slice(0, 7);
+    saveHistory();
+
+    if (t.cal > dailyLimit) showAlert('alertOver', 8000);
+    else showAlert('alertWin', 8000);
+
+    items = [];
+    saveItems();
+    scheduleCloudSave();
+    render();
+    updateLiveTotal();
+    renderHistory();
+    document.getElementById('alertOver').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+    const currentWeek = getIranWeekKey(new Date());
+    const weekItems = history.filter(h => h.weekKey === currentWeek);
+    if (weekItems.length === 0) {
+      list.innerHTML = '<div class="hist-empty">هنوز روزی در این هفته ثبت نشده است</div>';
+      return;
+    }
+    list.innerHTML = weekItems.map((h) => {
+      const lim = h.limit || dailyLimit;
+      const cls = h.cal > lim ? 'over' : 'win';
+      const idx = history.indexOf(h);
+      return `
+        <div class="hist-item">
+          <span class="h-date">${escapeHtml(h.label)}</span>
+          <span class="h-cal ${cls}">${h.cal.toLocaleString('fa-IR')} کالری (از ${lim.toLocaleString('fa-IR')})</span>
+          <button class="h-btn" onclick="removeHistory(${idx})">حذف</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function removeHistory(index) {
+    if (!confirm('این روز از تاریخچه پاک شود؟')) return;
+    history.splice(index, 1);
+    saveHistory();
+    scheduleCloudSave();
+    renderHistory();
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // ============================================================
+  // بخش ۱۲: راه‌اندازی اولیه
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', async function() {
+    document.getElementById('footerYear').textContent = new Date().getFullYear().toLocaleString('fa-IR');
+
+    // ۱. بارگذاری از حافظه محلی
+    loadCurrentWeek();
+    loadItems();
+    loadHistory();
+    loadProfile();
+    userCode = safeStorageGet(LS_USER_CODE) || '';
+
+    // ۲. اگر کد کاربری داریم، همگام‌سازی ابری را فعال کن
+    if (userCode && FIREBASE_DATABASE_URL && !FIREBASE_DATABASE_URL.includes('YOUR-PROJECT-ID')) {
+      syncEnabled = true;
+      setSyncStatus(true);
+      // بارگذاری از ابر (اولویت با ابر است)
+      await loadFromCloud();
+    } else if (userCode) {
+      // کد داریم ولی Firebase پیکربندی نشده → آفلاین
+      syncEnabled = false;
+      setSyncStatus(false);
+    }
+
+    // ۳. اعمال پروفایل یا نمایش مودال
+    if (profile) {
+      applyProfile();
+    } else {
+      openProfile(false);
+    }
+
+    // ۴. بررسی هفته جدید
+    checkWeekChange();
+
+    // ۵. شروع ساعت
+    lastDayKey = getTodayKey();
+    startClock();
+
+    // ۶. رندر اولیه
+    render();
+    updateLiveTotal();
+    renderHistory();
+
+    // ۷. اتصال رویدادها
+    document.getElementById('foodName').addEventListener('input', autoFill);
+    document.getElementById('amount').addEventListener('input', autoFill);
+    document.getElementById('unit').addEventListener('change', autoFill);
+
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        updateDateBar();
+        if (syncEnabled) loadFromCloud().then(() => {
+          render();
+          updateLiveTotal();
+          renderHistory();
+        });
+      }
+    });
+    window.addEventListener('focus', updateDateBar);
+
+    // ۸. پر کردن datalist
+    const datalist = document.getElementById('foodList');
+    Object.keys(foodDB).sort().forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      datalist.appendChild(opt);
+    });
+  });
+</script>
+</body>
+</html>
