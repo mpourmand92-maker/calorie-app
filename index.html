@@ -347,7 +347,7 @@
     <div class="tab-pane active" id="paneLogin">
       <div class="form-group">
         <label>🔑 کد کاربری (همان کدی که قبلاً ثبت کردی)</label>
-        <input type="text" id="loginCode" placeholder="مثلاً 09121234567" dir="ltr" style="text-align:left;font-family:monospace;">
+        <input type="text" id="loginCode" placeholder="مثلاً 09121234567" inputmode="numeric" dir="ltr" style="text-align:left;font-family:monospace;">
       </div>
       <button class="btn-submit-profile" id="btnLogin" onclick="doLogin()">🚪 ورود</button>
       <p class="login-help">کدت را وارد کن تا اطلاعاتت از فضای ابری بازیابی شود.</p>
@@ -356,7 +356,7 @@
     <div class="tab-pane" id="paneRegister">
       <div class="form-group">
         <label>🔑 کد کاربری (یکتا) — مثلاً شماره موبایل</label>
-        <input type="text" id="regCode" placeholder="مثلاً 09121234567" dir="ltr" style="text-align:left;font-family:monospace;">
+        <input type="text" id="regCode" placeholder="مثلاً 09121234567" inputmode="numeric" dir="ltr" style="text-align:left;font-family:monospace;">
       </div>
       <div class="form-group">
         <label>اسمت چیه؟</label>
@@ -948,8 +948,8 @@
   // ============================================================
   // ذخیره‌سازی
   // ============================================================
-  const LS_PROFILE = 'calorie_app_profile_v8'; const LS_ITEMS = 'calorie_app_items_v8'; const LS_HISTORY = 'calorie_app_history_v8'; const LS_CURRENT_WEEK = 'calorie_app_current_week_v8'; const LS_USER_CODE = 'calorie_app_usercode_v8'; const LS_WATER_NOTIF = 'calorie_app_water_notif_v8'; const LS_THEME = 'calorie_app_theme_v8'; const LS_WATER = 'calorie_app_water_v8';
-  let profile = null; let dailyLimit = 1200; let items = []; let history = []; let currentWeekKey = ''; let lastDayKey = null; let clockTimer = null; let userCode = ''; let syncEnabled = false; let syncTimer = null; let waterTimer = null; let waterEnabled = false; let barcodeStream = null; let waterLog = []; // {time: timestamp, dateKey: 'YYYY-MM-DD'}
+  const LS_PROFILE = 'calorie_app_profile_v9'; const LS_ITEMS = 'calorie_app_items_v9'; const LS_HISTORY = 'calorie_app_history_v9'; const LS_CURRENT_WEEK = 'calorie_app_current_week_v9'; const LS_USER_CODE = 'calorie_app_usercode_v9'; const LS_WATER_NOTIF = 'calorie_app_water_notif_v9'; const LS_THEME = 'calorie_app_theme_v9'; const LS_WATER = 'calorie_app_water_v9';
+  let profile = null; let dailyLimit = 1200; let items = []; let history = []; let currentWeekKey = ''; let lastDayKey = null; let clockTimer = null; let userCode = ''; let syncEnabled = false; let syncTimer = null; let waterTimer = null; let waterEnabled = false; let barcodeStream = null; let waterLog = [];
 
   function safeStorageSet(key, value) { try { localStorage.setItem(key, value); return true; } catch(e) { return false; } }
   function safeStorageGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
@@ -964,10 +964,10 @@
   function saveWater() { safeStorageSet(LS_WATER, JSON.stringify(waterLog)); }
   function loadWater() { const raw = safeStorageGet(LS_WATER); if (raw) { try { waterLog = JSON.parse(raw) || []; } catch(e) { waterLog = []; } } }
 
-  function firebaseUrl(path) { return `${FIREBASE_DATABASE_URL}/users/${encodeURIComponent(userCode)}/${path}.json`; }
+  function firebaseUrl(path) { return `${FIREBASE_DATABASE_URL}/users/${encodeURIComponent(toEnglishDigits(userCode))}/${path}.json`; }
   async function cloudSave(key, data) { if (!syncEnabled || !userCode) return false; try { const res = await fetch(firebaseUrl(key), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); return res.ok; } catch(e) { return false; } }
   async function cloudLoad(key) { if (!syncEnabled || !userCode) return null; try { const res = await fetch(firebaseUrl(key)); if (!res.ok) return null; return await res.json(); } catch(e) { return null; } }
-  async function cloudCheckExists(code) { try { const res = await fetch(`${FIREBASE_DATABASE_URL}/users/${encodeURIComponent(code)}/profile.json`); if (!res.ok) return false; const data = await res.json(); return !!data; } catch(e) { return false; } }
+  async function cloudCheckExists(code) { code = toEnglishDigits(code); try { const res = await fetch(`${FIREBASE_DATABASE_URL}/users/${encodeURIComponent(code)}/profile.json`); if (!res.ok) return false; const data = await res.json(); return !!data; } catch(e) { return false; } }
   function setSyncStatus(ok) { const el = document.getElementById('syncStatus'); if (!el) return; if (!syncEnabled) { el.textContent = '💾 حالت آفلاین'; el.classList.add('offline', 'show'); return; } if (ok) { el.textContent = '☁️ همگام با فضای ابری'; el.classList.remove('offline'); } else { el.textContent = '⚠️ اتصال ابری ناموفق'; el.classList.add('offline'); } el.classList.add('show'); }
   function scheduleCloudSave() { if (!syncEnabled || !userCode) return; if (syncTimer) clearTimeout(syncTimer); syncTimer = setTimeout(async () => { let ok = true; if (profile) ok = await cloudSave('profile', profile) && ok; ok = await cloudSave('items', items) && ok; ok = await cloudSave('history', history) && ok; ok = await cloudSave('currentWeekKey', currentWeekKey) && ok; ok = await cloudSave('water', waterLog) && ok; setSyncStatus(ok); }, 800); }
   async function loadFromCloud() { if (!userCode) return; try { const [cp, ci, ch, cw, cwat] = await Promise.all([cloudLoad('profile'), cloudLoad('items'), cloudLoad('history'), cloudLoad('currentWeekKey'), cloudLoad('water')]); if (cp) { profile = cp; saveProfile(); } if (Array.isArray(ci)) { items = ci; saveItems(); } if (Array.isArray(ch)) { history = ch; saveHistory(); } if (cw) { currentWeekKey = cw; saveCurrentWeek(); } if (Array.isArray(cwat)) { waterLog = cwat; saveWater(); } setSyncStatus(true); } catch(e) { setSyncStatus(false); } }
@@ -985,7 +985,6 @@
   function logWater() {
     const now = new Date();
     waterLog.push({ time: now.getTime(), dateKey: getTodayKey() });
-    // فقط امروز و دیروز را نگه دار (برای بهینه‌سازی)
     const twoDaysAgo = now.getTime() - 2 * 24 * 60 * 60 * 1000;
     waterLog = waterLog.filter(w => w.time >= twoDaysAgo);
     saveWater(); scheduleCloudSave(); renderWater();
@@ -1011,7 +1010,6 @@
         const d = new Date(last.time);
         const hh = String(d.getHours()).padStart(2, '0');
         const mm = String(d.getMinutes()).padStart(2, '0');
-        // فاصله از آخرین بار
         const diffMin = Math.floor((Date.now() - last.time) / 60000);
         let diffText = '';
         if (diffMin < 1) diffText = 'همین الان';
@@ -1157,8 +1155,70 @@
   // ============================================================
   function switchTab(tab) { const isLogin = tab === 'login'; document.getElementById('tabLoginBtn').classList.toggle('active', isLogin); document.getElementById('tabRegisterBtn').classList.toggle('active', !isLogin); document.getElementById('paneLogin').classList.toggle('active', isLogin); document.getElementById('paneRegister').classList.toggle('active', !isLogin); }
   function openProfile(isEdit = false) { if (profile) { document.getElementById('regCode').value = userCode || ''; document.getElementById('regName').value = profile.name || ''; document.getElementById('regHeight').value = profile.height; document.getElementById('regWeight').value = profile.weight; document.getElementById('regAge').value = profile.age; document.getElementById('regActivity').value = profile.activity; document.getElementById('regGoal').value = profile.goal; document.getElementById(profile.gender === 'male' ? 'regMale' : 'regFemale').checked = true; switchTab('register'); } else { switchTab('login'); } document.getElementById('profileResult').classList.remove('show'); document.getElementById('profileOverlay').classList.remove('hidden'); }
-  async function doLogin() { const code = document.getElementById('loginCode').value.trim(); if (!code || code.length < 3) { alert('کد کاربری معتبر وارد کن'); return; } const btn = document.getElementById('btnLogin'); btn.disabled = true; btn.textContent = '⏳ در حال بررسی...'; const exists = await cloudCheckExists(code); if (!exists) { btn.disabled = false; btn.textContent = '🚪 ورود'; alert('❌ کاربری با این کد پیدا نشد. اگر قبلاً ثبت‌نام نکردی، از تب «ثبت‌نام» استفاده کن.'); return; } userCode = code; safeStorageSet(LS_USER_CODE, userCode); syncEnabled = true; setSyncStatus(true); await loadFromCloud(); if (!profile) { btn.disabled = false; btn.textContent = '🚪 ورود'; alert('⚠️ داده‌های پروفایل یافت نشد.'); return; } document.getElementById('profileOverlay').classList.add('hidden'); applyProfile(); render(); renderWater(); updateLiveTotal(); renderHistory(); updateDateBar(); btn.disabled = false; btn.textContent = '🚪 ورود'; }
-  async function doRegister() { const code = document.getElementById('regCode').value.trim(); const name = document.getElementById('regName').value.trim(); const height = parseFloat(toEnglishDigits(document.getElementById('regHeight').value)); const weight = parseFloat(toEnglishDigits(document.getElementById('regWeight').value)); const age = parseInt(toEnglishDigits(document.getElementById('regAge').value)); const activity = parseFloat(document.getElementById('regActivity').value); const gender = document.querySelector('input[name="regGender"]:checked').value; const goal = document.getElementById('regGoal').value; if (!code || code.length < 3) { alert('کد کاربری حداقل ۳ کاراکتر باشد'); return; } if (!name) { alert('اسمت رو وارد کن 🙂'); return; } if (!height || height < 80 || height > 250) { alert('قد معتبر وارد کن'); return; } if (!weight || weight < 20 || weight > 300) { alert('وزن معتبر وارد کن'); return; } if (!age || age < 10 || age > 100) { alert('سن معتبر وارد کن'); return; } const btn = document.getElementById('btnRegister'); btn.disabled = true; btn.textContent = '⏳ در حال بررسی...'; const exists = await cloudCheckExists(code); if (exists) { btn.disabled = false; btn.textContent = '✅ ثبت‌نام و ذخیره در ابر'; if (confirm('این کد قبلاً ثبت شده. اگر صاحب کد هستی، از تب «ورود» وارد شو.')) { switchTab('login'); document.getElementById('loginCode').value = code; } return; } userCode = code; safeStorageSet(LS_USER_CODE, userCode); profile = { name, height, weight, age, activity, gender, goal, updatedAt: Date.now() }; saveProfile(); items = []; history = []; waterLog = []; saveItems(); saveHistory(); saveWater(); currentWeekKey = getIranWeekKey(new Date()); saveCurrentWeek(); syncEnabled = true; setSyncStatus(true); await cloudSave('profile', profile); await cloudSave('items', []); await cloudSave('history', []); await cloudSave('water', []); await cloudSave('currentWeekKey', currentWeekKey); const r = calculateTDEE(profile); const resultEl = document.getElementById('profileResult'); resultEl.classList.add('show'); resultEl.innerHTML = `<div>🔬 BMR: <strong>${r.bmr.toLocaleString('fa-IR')} کالری</strong></div><div>🏃 TDEE: <strong>${r.tdee.toLocaleString('fa-IR')} کالری</strong></div><div>🎯 هدف: <strong>${r.target.toLocaleString('fa-IR')} کالری در روز</strong></div><div style="margin-top:8px;font-size:11px;color:#6b8a7d;">${name} جان، ثبت‌نام انجام شد. از این پس در هر دستگاه با کد «${code}» وارد شو.</div>`; setTimeout(() => { document.getElementById('profileOverlay').classList.add('hidden'); applyProfile(); render(); renderWater(); updateLiveTotal(); renderHistory(); updateDateBar(); btn.disabled = false; btn.textContent = '✅ ثبت‌نام و ذخیره در ابر'; }, 3000); }
+  async function doLogin() {
+    let code = document.getElementById('loginCode').value.trim();
+    code = toEnglishDigits(code);
+    if (!code || code.length < 3) { alert('کد کاربری معتبر وارد کن'); return; }
+    const btn = document.getElementById('btnLogin');
+    btn.disabled = true; btn.textContent = '⏳ در حال بررسی...';
+    const exists = await cloudCheckExists(code);
+    if (!exists) {
+      btn.disabled = false; btn.textContent = '🚪 ورود';
+      alert('❌ کاربری با این کد پیدا نشد. اگر قبلاً ثبت‌نام نکردی، از تب «ثبت‌نام» استفاده کن.');
+      return;
+    }
+    userCode = code;
+    safeStorageSet(LS_USER_CODE, userCode);
+    syncEnabled = true; setSyncStatus(true);
+    await loadFromCloud();
+    if (!profile) {
+      btn.disabled = false; btn.textContent = '🚪 ورود';
+      alert('⚠️ داده‌های پروفایل یافت نشد.');
+      return;
+    }
+    document.getElementById('profileOverlay').classList.add('hidden');
+    applyProfile(); render(); renderWater(); updateLiveTotal(); renderHistory(); updateDateBar();
+    btn.disabled = false; btn.textContent = '🚪 ورود';
+  }
+  async function doRegister() {
+    let code = document.getElementById('regCode').value.trim();
+    code = toEnglishDigits(code);
+    const name = document.getElementById('regName').value.trim();
+    const height = parseFloat(toEnglishDigits(document.getElementById('regHeight').value));
+    const weight = parseFloat(toEnglishDigits(document.getElementById('regWeight').value));
+    const age = parseInt(toEnglishDigits(document.getElementById('regAge').value));
+    const activity = parseFloat(document.getElementById('regActivity').value);
+    const gender = document.querySelector('input[name="regGender"]:checked').value;
+    const goal = document.getElementById('regGoal').value;
+    if (!code || code.length < 3) { alert('کد کاربری حداقل ۳ کاراکتر باشد'); return; }
+    if (!name) { alert('اسمت رو وارد کن 🙂'); return; }
+    if (!height || height < 80 || height > 250) { alert('قد معتبر وارد کن'); return; }
+    if (!weight || weight < 20 || weight > 300) { alert('وزن معتبر وارد کن'); return; }
+    if (!age || age < 10 || age > 100) { alert('سن معتبر وارد کن'); return; }
+    const btn = document.getElementById('btnRegister');
+    btn.disabled = true; btn.textContent = '⏳ در حال بررسی...';
+    const exists = await cloudCheckExists(code);
+    if (exists) {
+      btn.disabled = false; btn.textContent = '✅ ثبت‌نام و ذخیره در ابر';
+      if (confirm('این کد قبلاً ثبت شده. اگر صاحب کد هستی، از تب «ورود» وارد شو.')) { switchTab('login'); document.getElementById('loginCode').value = code; }
+      return;
+    }
+    userCode = code; safeStorageSet(LS_USER_CODE, userCode);
+    profile = { name, height, weight, age, activity, gender, goal, updatedAt: Date.now() };
+    saveProfile(); items = []; history = []; waterLog = []; saveItems(); saveHistory(); saveWater();
+    currentWeekKey = getIranWeekKey(new Date()); saveCurrentWeek();
+    syncEnabled = true; setSyncStatus(true);
+    await cloudSave('profile', profile); await cloudSave('items', []); await cloudSave('history', []); await cloudSave('water', []); await cloudSave('currentWeekKey', currentWeekKey);
+    const r = calculateTDEE(profile);
+    const resultEl = document.getElementById('profileResult');
+    resultEl.classList.add('show');
+    resultEl.innerHTML = `<div>🔬 BMR: <strong>${r.bmr.toLocaleString('fa-IR')} کالری</strong></div><div>🏃 TDEE: <strong>${r.tdee.toLocaleString('fa-IR')} کالری</strong></div><div>🎯 هدف: <strong>${r.target.toLocaleString('fa-IR')} کالری در روز</strong></div><div style="margin-top:8px;font-size:11px;color:#6b8a7d;">${name} جان، ثبت‌نام انجام شد. از این پس در هر دستگاه با کد «${code}» وارد شو.</div>`;
+    setTimeout(() => {
+      document.getElementById('profileOverlay').classList.add('hidden');
+      applyProfile(); render(); renderWater(); updateLiveTotal(); renderHistory(); updateDateBar();
+      btn.disabled = false; btn.textContent = '✅ ثبت‌نام و ذخیره در ابر';
+    }, 3000);
+  }
 
   // ============================================================
   // تاریخ
