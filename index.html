@@ -86,6 +86,13 @@
   .btn-submit-profile:hover { filter: brightness(1.06); }
   .btn-submit-profile:active { transform: scale(0.98); }
   .btn-submit-profile:disabled { opacity: 0.6; cursor: wait; }
+  .btn-actions-row { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-back-edit { flex: 1; padding: 12px; background: #f2fbf6; color: #14523c; border: 1px solid #dcefe5; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .btn-back-edit:hover { filter: brightness(0.97); }
+  body.dark .btn-back-edit { background: #1c3529; color: #a9dfbf; border-color: #2a4a3e; }
+  .btn-logout-edit { flex: 1; padding: 12px; background: #fdf0ef; color: #c0392b; border: 1px solid #f5c6c0; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .btn-logout-edit:hover { filter: brightness(0.97); }
+  body.dark .btn-logout-edit { background: #3a1f1c; color: #e08070; border-color: #5a2e28; }
   .profile-result { margin-top: 16px; padding: 14px; background: #f2fbf6; border-radius: 12px; border: 1px solid #d4e8dd; font-size: 13px; line-height: 1.9; color: #1a5c45; display: none; }
   body.dark .profile-result { background: #1c3529; color: #a9dfbf; border-color: #2a4a3e; }
   .profile-result.show { display: block; }
@@ -336,10 +343,10 @@
 <!-- ===== مودال ورود / ثبت‌نام ===== -->
 <div class="modal-overlay hidden" id="profileOverlay">
   <div class="profile-modal">
-    <h2>👋 خوش آمدی!</h2>
-    <p class="pm-desc">اگر قبلاً ثبت‌نام کرده‌ای، فقط کد کاربری‌ات را وارد کن. اگر کاربر جدید هستی، ثبت‌نام کن.</p>
+    <h2 id="pmTitle">👋 خوش آمدی!</h2>
+    <p class="pm-desc" id="pmDesc">اگر قبلاً ثبت‌نام کرده‌ای، فقط کد کاربری‌ات را وارد کن. اگر کاربر جدید هستی، ثبت‌نام کن.</p>
 
-    <div class="tab-row">
+    <div class="tab-row" id="profileTabRow">
       <button class="tab-btn active" id="tabLoginBtn" onclick="switchTab('login')">🔐 ورود</button>
       <button class="tab-btn" id="tabRegisterBtn" onclick="switchTab('register')">🆕 ثبت‌نام</button>
     </div>
@@ -399,6 +406,13 @@
         <button type="button" id="waterNotifEditBtn" onclick="toggleWaterNotifications()" style="width:100%; background:#2d8a63; color:#fff; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;">🔔 فعال‌سازی یادآور آب</button>
       </div>
       <button class="btn-submit-profile" id="btnRegister" onclick="doRegister()">✅ ثبت‌نام و ذخیره در ابر</button>
+      <div id="editActions" style="display:none;">
+        <button class="btn-submit-profile" id="btnSaveEdit" onclick="doSaveEdit()" style="margin-top:0;">💾 ذخیره تغییرات</button>
+        <div class="btn-actions-row">
+          <button type="button" class="btn-back-edit" onclick="closeProfileModal()">↩️ بازگشت</button>
+          <button type="button" class="btn-logout-edit" onclick="doLogout()">🚪 خروج</button>
+        </div>
+      </div>
       <div class="profile-result" id="profileResult"></div>
     </div>
   </div>
@@ -1158,7 +1172,7 @@
   // ورود / ثبت‌نام
   // ============================================================
   function switchTab(tab) { const isLogin = tab === 'login'; document.getElementById('tabLoginBtn').classList.toggle('active', isLogin); document.getElementById('tabRegisterBtn').classList.toggle('active', !isLogin); document.getElementById('paneLogin').classList.toggle('active', isLogin); document.getElementById('paneRegister').classList.toggle('active', !isLogin); }
-  function openProfile(isEdit = false) { if (profile) { document.getElementById('regCode').value = userCode || ''; document.getElementById('regName').value = profile.name || ''; document.getElementById('regHeight').value = profile.height; document.getElementById('regWeight').value = profile.weight; document.getElementById('regAge').value = profile.age; document.getElementById('regActivity').value = profile.activity; document.getElementById('regGoal').value = profile.goal; document.getElementById(profile.gender === 'male' ? 'regMale' : 'regFemale').checked = true; switchTab('register'); } else { switchTab('login'); } const wGroup = document.getElementById('waterNotifEditGroup'); if (wGroup) wGroup.style.display = isEdit ? 'block' : 'none'; document.getElementById('profileResult').classList.remove('show'); document.getElementById('profileOverlay').classList.remove('hidden'); }
+  function openProfile(isEdit = false) { const inEdit = isEdit && !!profile; if (profile) { document.getElementById('regCode').value = userCode || ''; document.getElementById('regName').value = profile.name || ''; document.getElementById('regHeight').value = profile.height; document.getElementById('regWeight').value = profile.weight; document.getElementById('regAge').value = profile.age; document.getElementById('regActivity').value = profile.activity; document.getElementById('regGoal').value = profile.goal; document.getElementById(profile.gender === 'male' ? 'regMale' : 'regFemale').checked = true; switchTab('register'); } else { switchTab('login'); } const inEditEls = { tabRow: document.getElementById('profileTabRow'), regBtn: document.getElementById('btnRegister'), editActions: document.getElementById('editActions'), wGroup: document.getElementById('waterNotifEditGroup'), title: document.getElementById('pmTitle'), desc: document.getElementById('pmDesc') }; if (inEditEls.tabRow) inEditEls.tabRow.style.display = inEdit ? 'none' : 'grid'; if (inEditEls.regBtn) inEditEls.regBtn.style.display = inEdit ? 'none' : 'block'; if (inEditEls.editActions) inEditEls.editActions.style.display = inEdit ? 'block' : 'none'; if (inEditEls.wGroup) inEditEls.wGroup.style.display = inEdit ? 'block' : 'none'; if (inEditEls.title) inEditEls.title.textContent = inEdit ? '✏️ ویرایش مشخصات' : '👋 خوش آمدی!'; if (inEditEls.desc) inEditEls.desc.textContent = inEdit ? 'مشخصاتت را ویرایش کن؛ اگر تغییری نداری «بازگشت» بزن و اگر می‌خواهی از حسابت خارج شوی «خروج» را بزن.' : 'اگر قبلاً ثبت‌نام کرده‌ای، فقط کد کاربری‌ات را وارد کن. اگر کاربر جدید هستی، ثبت‌نام کن.'; document.getElementById('profileResult').classList.remove('show'); document.getElementById('profileOverlay').classList.remove('hidden'); }
   async function doLogin() {
     let code = document.getElementById('loginCode').value.trim();
     code = toEnglishDigits(code);
@@ -1222,6 +1236,47 @@
       applyProfile(); render(); renderWater(); updateLiveTotal(); renderHistory(); updateDateBar();
       btn.disabled = false; btn.textContent = '✅ ثبت‌نام و ذخیره در ابر';
     }, 3000);
+  }
+  function closeProfileModal() { document.getElementById('profileOverlay').classList.add('hidden'); document.getElementById('profileResult').classList.remove('show'); }
+  async function doSaveEdit() {
+    if (!profile) return;
+    let code = document.getElementById('regCode').value.trim();
+    code = toEnglishDigits(code);
+    const name = document.getElementById('regName').value.trim();
+    const height = parseFloat(toEnglishDigits(document.getElementById('regHeight').value));
+    const weight = parseFloat(toEnglishDigits(document.getElementById('regWeight').value));
+    const age = parseInt(toEnglishDigits(document.getElementById('regAge').value));
+    const activity = parseFloat(document.getElementById('regActivity').value);
+    const gender = document.querySelector('input[name="regGender"]:checked').value;
+    const goal = document.getElementById('regGoal').value;
+    if (!code || code.length < 3) { alert('کد کاربری حداقل ۳ کاراکتر باشد'); return; }
+    if (!name) { alert('اسمت رو وارد کن 🙂'); return; }
+    if (!height || height < 80 || height > 250) { alert('قد معتبر وارد کن'); return; }
+    if (!weight || weight < 20 || weight > 300) { alert('وزن معتبر وارد کن'); return; }
+    if (!age || age < 10 || age > 100) { alert('سن معتبر وارد کن'); return; }
+    const btn = document.getElementById('btnSaveEdit');
+    btn.disabled = true; btn.textContent = '⏳ در حال ذخیره...';
+    if (code !== userCode) {
+      const exists = await cloudCheckExists(code);
+      if (exists) { btn.disabled = false; btn.textContent = '💾 ذخیره تغییرات'; alert('این کد قبلاً توسط شخص دیگری ثبت شده. کد دیگری انتخاب کن.'); return; }
+      userCode = code; safeStorageSet(LS_USER_CODE, userCode);
+    }
+    profile = { ...profile, name, height, weight, age, activity, gender, goal, updatedAt: Date.now() };
+    saveProfile();
+    try { syncEnabled = true; setSyncStatus(true); await cloudSave('profile', profile); } catch (e) { setSyncStatus(false); }
+    btn.disabled = false; btn.textContent = '💾 ذخیره تغییرات';
+    applyProfile(); render(); renderWater(); updateLiveTotal(); renderHistory(); updateDateBar(); renderChart();
+    closeProfileModal();
+    alert('تغییرات ذخیره شد ✅');
+  }
+  function doLogout() {
+    if (!confirm('از حسابت خارج می‌شوید؟\nداده‌های ثبت‌شده در این دستگاه پاک می‌شود (داده‌های ابری با کد کاربری‌ات باقی می‌ماند).')) return;
+    profile = null; userCode = ''; items = []; history = []; waterLog = []; syncEnabled = false;
+    if (syncTimer) clearInterval(syncTimer);
+    if (waterTimer) { clearInterval(waterTimer); waterTimer = null; }
+    safeStorageSet(LS_PROFILE, ''); safeStorageSet(LS_ITEMS, ''); safeStorageSet(LS_HISTORY, ''); safeStorageSet(LS_CURRENT_WEEK, ''); safeStorageSet(LS_USER_CODE, ''); safeStorageSet(LS_WATER, '');
+    closeProfileModal();
+    location.reload();
   }
 
   // ============================================================
