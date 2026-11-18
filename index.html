@@ -394,6 +394,10 @@
           <option value="gain">📈 افزایش وزن</option>
         </select>
       </div>
+      <div class="form-group" id="waterNotifEditGroup" style="display:none;">
+        <label>⏰ یادآور نوشیدن آب (هر ۱ ساعت)</label>
+        <button type="button" id="waterNotifEditBtn" onclick="toggleWaterNotifications()" style="width:100%; background:#2d8a63; color:#fff; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;">🔔 فعال‌سازی یادآور آب</button>
+      </div>
       <button class="btn-submit-profile" id="btnRegister" onclick="doRegister()">✅ ثبت‌نام و ذخیره در ابر</button>
       <div class="profile-result" id="profileResult"></div>
     </div>
@@ -444,7 +448,7 @@
   </div>
 
   <!-- ===== یادآور آب ===== -->
-  <div style="background: var(--bar-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text-title); font-weight: 600;">
+  <div id="waterNotifBar" style="background: var(--bar-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text-title); font-weight: 600;">
     <span>⏰ یادآور نوشیدن آب (هر ۱ ساعت)</span>
     <button id="waterNotifBtn" onclick="toggleWaterNotifications()" style="background: #2d8a63; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;">فعال‌سازی</button>
   </div>
@@ -1154,7 +1158,7 @@
   // ورود / ثبت‌نام
   // ============================================================
   function switchTab(tab) { const isLogin = tab === 'login'; document.getElementById('tabLoginBtn').classList.toggle('active', isLogin); document.getElementById('tabRegisterBtn').classList.toggle('active', !isLogin); document.getElementById('paneLogin').classList.toggle('active', isLogin); document.getElementById('paneRegister').classList.toggle('active', !isLogin); }
-  function openProfile(isEdit = false) { if (profile) { document.getElementById('regCode').value = userCode || ''; document.getElementById('regName').value = profile.name || ''; document.getElementById('regHeight').value = profile.height; document.getElementById('regWeight').value = profile.weight; document.getElementById('regAge').value = profile.age; document.getElementById('regActivity').value = profile.activity; document.getElementById('regGoal').value = profile.goal; document.getElementById(profile.gender === 'male' ? 'regMale' : 'regFemale').checked = true; switchTab('register'); } else { switchTab('login'); } document.getElementById('profileResult').classList.remove('show'); document.getElementById('profileOverlay').classList.remove('hidden'); }
+  function openProfile(isEdit = false) { if (profile) { document.getElementById('regCode').value = userCode || ''; document.getElementById('regName').value = profile.name || ''; document.getElementById('regHeight').value = profile.height; document.getElementById('regWeight').value = profile.weight; document.getElementById('regAge').value = profile.age; document.getElementById('regActivity').value = profile.activity; document.getElementById('regGoal').value = profile.goal; document.getElementById(profile.gender === 'male' ? 'regMale' : 'regFemale').checked = true; switchTab('register'); } else { switchTab('login'); } const wGroup = document.getElementById('waterNotifEditGroup'); if (wGroup) wGroup.style.display = isEdit ? 'block' : 'none'; document.getElementById('profileResult').classList.remove('show'); document.getElementById('profileOverlay').classList.remove('hidden'); }
   async function doLogin() {
     let code = document.getElementById('loginCode').value.trim();
     code = toEnglishDigits(code);
@@ -1253,7 +1257,7 @@
   // ============================================================
   // یادآور آب
   // ============================================================
-  function updateWaterBtn() { const btn = document.getElementById('waterNotifBtn'); if (!btn) return; if (waterEnabled) { btn.textContent = 'فعال است ✓ (غیرفعال)'; btn.style.background = '#c0392b'; } else { btn.textContent = 'فعال‌سازی'; btn.style.background = '#2d8a63'; } }
+  function updateWaterBtn() { const btn = document.getElementById('waterNotifBtn'); if (btn) { if (waterEnabled) { btn.textContent = 'فعال است ✓ (غیرفعال)'; btn.style.background = '#c0392b'; } else { btn.textContent = 'فعال‌سازی'; btn.style.background = '#2d8a63'; } } const bar = document.getElementById('waterNotifBar'); if (bar) bar.style.display = waterEnabled ? 'none' : 'flex'; const eb = document.getElementById('waterNotifEditBtn'); if (eb) { if (waterEnabled) { eb.textContent = '🔕 یادآور فعال است — غیرفعال کن'; eb.style.background = '#c0392b'; } else { eb.textContent = '🔔 فعال‌سازی یادآور آب'; eb.style.background = '#2d8a63'; } } }
   async function toggleWaterNotifications() { if (waterEnabled) { waterEnabled = false; if (waterTimer) clearInterval(waterTimer); safeStorageSet(LS_WATER_NOTIF, '0'); updateWaterBtn(); alert('یادآور آب غیرفعال شد.'); return; } if (!('Notification' in window)) { alert('مرورگر شما از نوتیفیکیشن پشتیبانی نمی‌کند.'); return; } const perm = await Notification.requestPermission(); if (perm !== 'granted') { alert('اجازه نوتیفیکیشن داده نشد.'); return; } waterEnabled = true; safeStorageSet(LS_WATER_NOTIF, '1'); updateWaterBtn(); sendWaterNotification(true); if (waterTimer) clearInterval(waterTimer); waterTimer = setInterval(() => sendWaterNotification(false), 60 * 60 * 1000); alert('یادآور آب فعال شد.'); }
   function sendWaterNotification(isFirst) { if (!waterEnabled) return; const title = '💧 وقت نوشیدن آب!'; const body = isFirst ? 'سلام! یادآور آب فعال شد. آب کافی بنوش 🌊' : 'یک ساعت گذشت. همین الان یک لیوان آب بنوش 🌊'; if ('Notification' in window && Notification.permission === 'granted') { try { const notif = new Notification(title, { body, tag: 'water-reminder', renotify: true }); notif.onclick = () => { window.focus(); notif.close(); }; } catch (e) { alert(`💧 ${body}`); } } else { alert(`💧 ${body}`); } }
 
